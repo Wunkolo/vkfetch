@@ -5,6 +5,47 @@
 #define VULKAN_HPP_NO_EXCEPTIONS
 #include <vulkan/vulkan.hpp>
 
+constexpr std::size_t operator""_KiB(unsigned long long int Size)
+{
+	return 1024ULL * Size;
+}
+
+constexpr std::size_t operator""_MiB(unsigned long long int Size)
+{
+	return 1024_KiB * Size;
+}
+
+constexpr std::size_t operator""_GiB(unsigned long long int Size)
+{
+	return 1024_MiB * Size;
+}
+
+constexpr std::size_t operator""_TiB(unsigned long long int Size)
+{
+	return 1024_GiB * Size;
+}
+
+constexpr std::size_t operator""_PiB(unsigned long long int Size)
+{
+	return 1024_TiB * Size;
+}
+
+std::string FormatByteCount(std::size_t ByteCount)
+{
+	static const char* SizeUnits[] = {"Bytes", "KiB", "MiB", "GiB", "TiB",
+									  "PiB",   "EiB", "ZiB", "YiB"};
+
+	std::size_t Index;
+	double      ByteSize = ByteCount;
+	for( Index = 0; Index < std::extent_v<decltype(SizeUnits)>; Index++ )
+	{
+		if( ByteSize < 1024 )
+			break;
+		ByteSize /= 1024;
+	}
+	return std::to_string(ByteSize) + " " + SizeUnits[Index];
+}
+
 int main()
 {
 
@@ -50,10 +91,12 @@ int main()
 
 			std::printf(
 				"%s : %s\n"
-				"\tMEM: %14zu / %14zu : %%%f\n",
+				"\tMEM: %s / %s : %%%f\n",
 				DeviceProperties.deviceName.data(),
-				vk::to_string(DeviceProperties.deviceType).c_str(), MemUsed,
-				MemTotal, MemUsed / static_cast<float>(MemTotal));
+				vk::to_string(DeviceProperties.deviceType).c_str(),
+				FormatByteCount(MemUsed).c_str(),
+				FormatByteCount(MemTotal).c_str(),
+				MemUsed / static_cast<float>(MemTotal));
 		}
 	}
 
