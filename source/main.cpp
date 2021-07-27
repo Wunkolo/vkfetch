@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <optional>
 
 #define VULKAN_HPP_NO_EXCEPTIONS
 #include <vulkan/vulkan.hpp>
@@ -46,16 +47,67 @@ std::string FormatByteCount(std::size_t ByteCount)
 	return std::to_string(ByteSize) + " " + SizeUnits[Index];
 }
 
+bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
+{
+	const auto DeviceProperties = PhysicalDevice.getProperties();
+
+	const auto MemoryPropertyChain = PhysicalDevice.getMemoryProperties2<
+		vk::PhysicalDeviceMemoryProperties2,
+		vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
+	const auto& MemoryProperties =
+		MemoryPropertyChain.get<vk::PhysicalDeviceMemoryProperties2>();
+
+	const auto& MemoryBudgetProperties =
+		MemoryPropertyChain.get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
+
+	/// Get device-local heap
+	std::optional<std::uint32_t> FindVRAMHeapIndex =
+		[&MemoryProperties]() -> std::optional<std::uint32_t> {
+		for( std::uint32_t Index = 0;
+			 Index < MemoryProperties.memoryProperties.memoryHeapCount;
+			 ++Index )
+		{
+			if( (MemoryProperties.memoryProperties.memoryHeaps[Index].flags &
+				 vk::MemoryHeapFlagBits::eDeviceLocal) ==
+				vk::MemoryHeapFlagBits::eDeviceLocal )
+			{
+				return Index;
+			}
+		}
+		return std::nullopt;
+	}();
+
+	const std::uint32_t VRAMHeapIndex = FindVRAMHeapIndex.value();
+
+	const vk::DeviceSize MemTotal =
+		MemoryProperties.memoryProperties.memoryHeaps[VRAMHeapIndex].size;
+
+	// The heap budget is how much the current process is allowed to allocate
+	// from the heap. We compare it to the total amount of memory available
+	// to determine how much "usable" free memory there is left
+	const vk::DeviceSize MemUsed =
+		MemTotal - MemoryBudgetProperties.heapBudget[VRAMHeapIndex];
+
+	std::printf(
+		"%s : %s\n"
+		"\tMEM: %s / %s : %%%f\n",
+		DeviceProperties.deviceName.data(),
+		vk::to_string(DeviceProperties.deviceType).c_str(),
+		FormatByteCount(MemUsed).c_str(), FormatByteCount(MemTotal).c_str(),
+		MemUsed / static_cast<float>(MemTotal));
+
+	return true;
+}
+
 int main()
 {
 
 	vk::InstanceCreateInfo InstanceInfo = {};
 
 	vk::ApplicationInfo ApplicationInfo = {};
-
-	ApplicationInfo.apiVersion         = VK_API_VERSION_1_2;
-	ApplicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-	ApplicationInfo.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
+	ApplicationInfo.apiVersion          = VK_API_VERSION_1_2;
+	ApplicationInfo.applicationVersion  = VK_MAKE_VERSION(1, 0, 0);
+	ApplicationInfo.engineVersion       = VK_MAKE_VERSION(1, 0, 0);
 
 	InstanceInfo.pApplicationInfo = &ApplicationInfo;
 
@@ -72,31 +124,7 @@ int main()
 	{
 		for( const auto& CurDevice : EnumResult.value )
 		{
-			const auto DeviceProperties = CurDevice.getProperties();
-
-			const auto MemoryPropertyChain = CurDevice.getMemoryProperties2<
-				vk::PhysicalDeviceMemoryProperties2,
-				vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
-			const auto& MemoryProperties =
-				MemoryPropertyChain.get<vk::PhysicalDeviceMemoryProperties2>();
-
-			const auto& MemoryBudgetProperties =
-				MemoryPropertyChain
-					.get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
-
-			const vk::DeviceSize MemTotal =
-				MemoryProperties.memoryProperties.memoryHeaps[0].size;
-			const vk::DeviceSize MemUsed =
-				MemTotal - MemoryBudgetProperties.heapBudget[0];
-
-			std::printf(
-				"%s : %s\n"
-				"\tMEM: %s / %s : %%%f\n",
-				DeviceProperties.deviceName.data(),
-				vk::to_string(DeviceProperties.deviceType).c_str(),
-				FormatByteCount(MemUsed).c_str(),
-				FormatByteCount(MemTotal).c_str(),
-				MemUsed / static_cast<float>(MemTotal));
+			FetchDevice(CurDevice);
 		}
 	}
 
