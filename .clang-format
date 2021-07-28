@@ -5,6 +5,7 @@ AlignAfterOpenBracket: AlwaysBreak
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
 AlignConsecutiveBitFields: true
+AlignArrayOfStructures: Right
 AlignEscapedNewlines: Right
 AlignOperands: AlignAfterOperator
 AlignTrailingComments: true
@@ -54,7 +55,8 @@ ExperimentalAutoDetectBinPacking: false
 FixNamespaceComments: true
 IndentCaseLabels: false
 IndentWidth:     4
-IndentWrappedFunctionNames: false
+IndentWrappedFunctionNames: true
+InsertTrailingCommas: true
 KeepEmptyLinesAtTheStartOfBlocks: true
 MacroBlockBegin: ''
 MacroBlockEnd:   ''

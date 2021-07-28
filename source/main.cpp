@@ -1,3 +1,5 @@
+#include <array>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -33,18 +35,34 @@ constexpr std::size_t operator""_PiB(unsigned long long int Size)
 
 std::string FormatByteCount(std::size_t ByteCount)
 {
-	static const char* SizeUnits[] = {"Bytes", "KiB", "MiB", "GiB", "TiB",
-									  "PiB",   "EiB", "ZiB", "YiB"};
+	static std::array<const char*, 9> SizeUnits = {
+		{"Bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}};
 
 	std::size_t Index;
 	double      ByteSize = ByteCount;
 	for( Index = 0; Index < std::extent_v<decltype(SizeUnits)>; Index++ )
 	{
-		if( ByteSize < 1024 )
+		if( ByteSize < 1_KiB )
 			break;
-		ByteSize /= 1024;
+		ByteSize /= 1_KiB;
 	}
-	return std::to_string(ByteSize) + " " + SizeUnits[Index];
+	return std::to_string(ByteSize) + " " + SizeUnits.at(Index);
+}
+
+std::optional<std::uint32_t> FindVRAMHeapIndex(
+	const vk::PhysicalDeviceMemoryProperties& MemoryProperties)
+{
+	for( std::uint32_t Index = 0; Index < MemoryProperties.memoryHeapCount;
+		 ++Index )
+	{
+		if( (MemoryProperties.memoryHeaps[Index].flags &
+			 vk::MemoryHeapFlagBits::eDeviceLocal) ==
+			vk::MemoryHeapFlagBits::eDeviceLocal )
+		{
+			return Index;
+		}
+	}
+	return std::nullopt;
 }
 
 bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
@@ -61,23 +79,9 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		MemoryPropertyChain.get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
 
 	/// Get device-local heap
-	std::optional<std::uint32_t> FindVRAMHeapIndex =
-		[&MemoryProperties]() -> std::optional<std::uint32_t> {
-		for( std::uint32_t Index = 0;
-			 Index < MemoryProperties.memoryProperties.memoryHeapCount;
-			 ++Index )
-		{
-			if( (MemoryProperties.memoryProperties.memoryHeaps[Index].flags &
-				 vk::MemoryHeapFlagBits::eDeviceLocal) ==
-				vk::MemoryHeapFlagBits::eDeviceLocal )
-			{
-				return Index;
-			}
-		}
-		return std::nullopt;
-	}();
 
-	const std::uint32_t VRAMHeapIndex = FindVRAMHeapIndex.value();
+	const std::uint32_t VRAMHeapIndex =
+		FindVRAMHeapIndex(MemoryProperties.memoryProperties).value_or(0);
 
 	const vk::DeviceSize MemTotal =
 		MemoryProperties.memoryProperties.memoryHeaps[VRAMHeapIndex].size;
@@ -94,7 +98,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		DeviceProperties.deviceName.data(),
 		vk::to_string(DeviceProperties.deviceType).c_str(),
 		FormatByteCount(MemUsed).c_str(), FormatByteCount(MemTotal).c_str(),
-		MemUsed / static_cast<float>(MemTotal));
+		MemUsed / static_cast<std::float_t>(MemTotal));
 
 	return true;
 }
