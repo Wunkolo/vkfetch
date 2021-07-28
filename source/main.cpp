@@ -40,7 +40,7 @@ std::string FormatByteCount(std::size_t ByteCount)
 
 	std::size_t Index;
 	double      ByteSize = ByteCount;
-	for( Index = 0; Index < std::extent_v<decltype(SizeUnits)>; Index++ )
+	for( Index = 0; Index < SizeUnits.size(); Index++ )
 	{
 		if( ByteSize < 1_KiB )
 			break;
@@ -67,11 +67,18 @@ std::optional<std::uint32_t> FindVRAMHeapIndex(
 
 bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 {
-	const auto DeviceProperties = PhysicalDevice.getProperties();
+	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
+		vk::PhysicalDeviceProperties2,
+		vk::PhysicalDeviceDriverProperties
+	>();
+
+	const auto& DeviceProperties = DevicePropertyChain.get<vk::PhysicalDeviceProperties2>();
+	const auto& DeviceDriverProperties = DevicePropertyChain.get<vk::PhysicalDeviceDriverProperties>();
 
 	const auto MemoryPropertyChain = PhysicalDevice.getMemoryProperties2<
 		vk::PhysicalDeviceMemoryProperties2,
-		vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
+		vk::PhysicalDeviceMemoryBudgetPropertiesEXT
+	>();
 	const auto& MemoryProperties =
 		MemoryPropertyChain.get<vk::PhysicalDeviceMemoryProperties2>();
 
@@ -94,9 +101,12 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 	std::printf(
 		"%s : %s\n"
+		"\tDriver : %s : %s\n"
 		"\tMEM: %s / %s : %%%f\n",
-		DeviceProperties.deviceName.data(),
-		vk::to_string(DeviceProperties.deviceType).c_str(),
+		DeviceProperties.properties.deviceName.data(),
+		vk::to_string(DeviceProperties.properties.deviceType).c_str(),
+		DeviceDriverProperties.driverName.data(),
+		DeviceDriverProperties.driverInfo.data(),
 		FormatByteCount(MemUsed).c_str(), FormatByteCount(MemTotal).c_str(),
 		MemUsed / static_cast<std::float_t>(MemTotal));
 
