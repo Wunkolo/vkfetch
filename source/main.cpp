@@ -33,6 +33,48 @@ constexpr std::size_t operator""_PiB(unsigned long long int Size)
 	return 1024_TiB * Size;
 }
 
+enum class VendorID : std::uint32_t
+{
+	AMD      = 0x1002,
+	ImgTec   = 0x1010,
+	Nvidia   = 0x10DE,
+	ARM      = 0x13B5,
+	Qualcomm = 0x5143,
+	Intel    = 0x8086
+};
+
+const char* VendorName(VendorID Vendor)
+{
+	switch( Vendor )
+	{
+	case VendorID::AMD:
+	{
+		return "AMD";
+	}
+	case VendorID::ImgTec:
+	{
+		return "ImgTec";
+	}
+	case VendorID::Nvidia:
+	{
+		return "Nvidia";
+	}
+	case VendorID::ARM:
+	{
+		return "ARM";
+	}
+	case VendorID::Qualcomm:
+	{
+		return "Qualcomm";
+	}
+	case VendorID::Intel:
+	{
+		return "Intel";
+	}
+	}
+	return "Unknown";
+}
+
 std::string FormatByteCount(std::size_t ByteCount)
 {
 	static std::array<const char*, 9> SizeUnits = {
@@ -65,20 +107,26 @@ std::optional<std::uint32_t> FindVRAMHeapIndex(
 	return std::nullopt;
 }
 
+std::string FormatVersion(std::uint32_t Version)
+{
+	return std::to_string(VK_VERSION_MAJOR(Version)) + "." +
+		   std::to_string(VK_VERSION_MINOR(Version)) + "." +
+		   std::to_string(VK_VERSION_PATCH(Version));
+}
+
 bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
-		vk::PhysicalDeviceProperties2,
-		vk::PhysicalDeviceDriverProperties
-	>();
+		vk::PhysicalDeviceProperties2, vk::PhysicalDeviceDriverProperties>();
 
-	const auto& DeviceProperties = DevicePropertyChain.get<vk::PhysicalDeviceProperties2>();
-	const auto& DeviceDriverProperties = DevicePropertyChain.get<vk::PhysicalDeviceDriverProperties>();
+	const auto& DeviceProperties =
+		DevicePropertyChain.get<vk::PhysicalDeviceProperties2>();
+	const auto& DeviceDriverProperties =
+		DevicePropertyChain.get<vk::PhysicalDeviceDriverProperties>();
 
 	const auto MemoryPropertyChain = PhysicalDevice.getMemoryProperties2<
 		vk::PhysicalDeviceMemoryProperties2,
-		vk::PhysicalDeviceMemoryBudgetPropertiesEXT
-	>();
+		vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
 	const auto& MemoryProperties =
 		MemoryPropertyChain.get<vk::PhysicalDeviceMemoryProperties2>();
 
@@ -90,21 +138,25 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	const std::uint32_t VRAMHeapIndex =
 		FindVRAMHeapIndex(MemoryProperties.memoryProperties).value_or(0);
 
-	const vk::DeviceSize MemTotal =
-		MemoryProperties.memoryProperties.memoryHeaps[VRAMHeapIndex].size;
-
 	// The heap budget is how much the current process is allowed to allocate
 	// from the heap. We compare it to the total amount of memory available
 	// to determine how much "usable" free memory there is left
+	const vk::DeviceSize MemTotal =
+		MemoryProperties.memoryProperties.memoryHeaps[VRAMHeapIndex].size;
 	const vk::DeviceSize MemUsed =
 		MemTotal - MemoryBudgetProperties.heapBudget[VRAMHeapIndex];
 
 	std::printf(
 		"%s : %s\n"
+		"\tVendor: %u : (%s)\n"
+		"\tAPI: %s\n"
 		"\tDriver : %s : %s\n"
 		"\tMEM: %s / %s : %%%f\n",
 		DeviceProperties.properties.deviceName.data(),
 		vk::to_string(DeviceProperties.properties.deviceType).c_str(),
+		DeviceProperties.properties.vendorID,
+		VendorName(static_cast<VendorID>(DeviceProperties.properties.vendorID)),
+		FormatVersion(DeviceProperties.properties.apiVersion).c_str(),
 		DeviceDriverProperties.driverName.data(),
 		DeviceDriverProperties.driverInfo.data(),
 		FormatByteCount(MemUsed).c_str(), FormatByteCount(MemTotal).c_str(),
