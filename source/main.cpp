@@ -139,6 +139,27 @@ bool VendorDetails<VendorID::Nvidia>(const vk::PhysicalDevice& PhysicalDevice)
 	return true;
 }
 
+template<>
+bool VendorDetails<VendorID::AMD>(const vk::PhysicalDevice& PhysicalDevice)
+{
+	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
+		vk::PhysicalDeviceProperties2,
+		vk::PhysicalDeviceShaderCorePropertiesAMD,
+		vk::PhysicalDeviceShaderCoreProperties2AMD>();
+
+	const auto ShaderCoreProperties =
+		DevicePropertyChain.get<vk::PhysicalDeviceShaderCorePropertiesAMD>();
+	const auto ShaderCoreProperties2 =
+		DevicePropertyChain.get<vk::PhysicalDeviceShaderCoreProperties2AMD>();
+
+	std::printf(
+		"\tCompute Units: %u\n"
+		"\tShader Engines: %u\n",
+		ShaderCoreProperties2.activeComputeUnitCount,
+		ShaderCoreProperties.shaderEngineCount);
+	return true;
+}
+
 bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
