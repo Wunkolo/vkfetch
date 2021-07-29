@@ -114,6 +114,31 @@ std::string FormatVersion(std::uint32_t Version)
 		   std::to_string(VK_VERSION_PATCH(Version));
 }
 
+template<VendorID Vendor>
+bool VendorDetails(const vk::PhysicalDevice& PhysicalDevice)
+{
+	return true;
+}
+
+template<>
+bool VendorDetails<VendorID::Nvidia>(const vk::PhysicalDevice& PhysicalDevice)
+{
+	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
+		vk::PhysicalDeviceProperties2,
+		vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>();
+
+	const auto SMBuiltinsProperties =
+		DevicePropertyChain
+			.get<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>();
+
+	std::printf(
+		"\tStreaming Multiprocessors: %u\n"
+		"\tWarpsPerSM: %u\n",
+		SMBuiltinsProperties.shaderSMCount,
+		SMBuiltinsProperties.shaderWarpsPerSM);
+	return true;
+}
+
 bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
@@ -148,10 +173,10 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 	std::printf(
 		"%s : %s\n"
-		"\tVendor: %u : (%s)\n"
+		"\tVendor: %4x : (%s)\n"
 		"\tAPI: %s\n"
-		"\tDriver : %s : %s\n"
-		"\tMEM: %s / %s : %%%f\n",
+		"\tDriver: %s : %s\n"
+		"\tVRAM: %s / %s : %%%f\n",
 		DeviceProperties.properties.deviceName.data(),
 		vk::to_string(DeviceProperties.properties.deviceType).c_str(),
 		DeviceProperties.properties.vendorID,
@@ -161,6 +186,25 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		DeviceDriverProperties.driverInfo.data(),
 		FormatByteCount(MemUsed).c_str(), FormatByteCount(MemTotal).c_str(),
 		MemUsed / static_cast<std::float_t>(MemTotal));
+
+	switch( static_cast<VendorID>(DeviceProperties.properties.vendorID) )
+	{
+	case VendorID::AMD:
+	{
+		VendorDetails<VendorID::AMD>(PhysicalDevice);
+		break;
+	}
+	case VendorID::Nvidia:
+	{
+		VendorDetails<VendorID::Nvidia>(PhysicalDevice);
+		break;
+	}
+	case VendorID::Intel:
+	{
+		VendorDetails<VendorID::Intel>(PhysicalDevice);
+		break;
+	}
+	}
 
 	return true;
 }
