@@ -77,8 +77,8 @@ const char* VendorName(VendorID Vendor)
 
 std::string FormatByteCount(std::size_t ByteCount)
 {
-	static std::array<const char*, 9> SizeUnits = {
-		{"Bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}};
+	static std::array<const char*, 9> SizeUnits
+		= {{"Bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}};
 
 	std::size_t Index;
 	double      ByteSize = ByteCount;
@@ -97,9 +97,9 @@ std::optional<std::uint32_t> FindVRAMHeapIndex(
 	for( std::uint32_t Index = 0; Index < MemoryProperties.memoryHeapCount;
 		 ++Index )
 	{
-		if( (MemoryProperties.memoryHeaps[Index].flags &
-			 vk::MemoryHeapFlagBits::eDeviceLocal) ==
-			vk::MemoryHeapFlagBits::eDeviceLocal )
+		if( (MemoryProperties.memoryHeaps[Index].flags
+			 & vk::MemoryHeapFlagBits::eDeviceLocal)
+			== vk::MemoryHeapFlagBits::eDeviceLocal )
 		{
 			return Index;
 		}
@@ -109,9 +109,9 @@ std::optional<std::uint32_t> FindVRAMHeapIndex(
 
 std::string FormatVersion(std::uint32_t Version)
 {
-	return std::to_string(VK_VERSION_MAJOR(Version)) + "." +
-		   std::to_string(VK_VERSION_MINOR(Version)) + "." +
-		   std::to_string(VK_VERSION_PATCH(Version));
+	return std::to_string(VK_VERSION_MAJOR(Version)) + "."
+		 + std::to_string(VK_VERSION_MINOR(Version)) + "."
+		 + std::to_string(VK_VERSION_PATCH(Version));
 }
 
 template<VendorID Vendor>
@@ -127,9 +127,9 @@ bool VendorDetails<VendorID::Nvidia>(const vk::PhysicalDevice& PhysicalDevice)
 		vk::PhysicalDeviceProperties2,
 		vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>();
 
-	const auto SMBuiltinsProperties =
-		DevicePropertyChain
-			.get<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>();
+	const auto SMBuiltinsProperties
+		= DevicePropertyChain
+			  .get<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>();
 
 	std::printf(
 		"\tStreaming Multiprocessors: %u\n"
@@ -147,16 +147,16 @@ bool VendorDetails<VendorID::AMD>(const vk::PhysicalDevice& PhysicalDevice)
 		vk::PhysicalDeviceShaderCorePropertiesAMD,
 		vk::PhysicalDeviceShaderCoreProperties2AMD>();
 
-	const auto ShaderCoreProperties =
-		DevicePropertyChain.get<vk::PhysicalDeviceShaderCorePropertiesAMD>();
-	const auto ShaderCoreProperties2 =
-		DevicePropertyChain.get<vk::PhysicalDeviceShaderCoreProperties2AMD>();
+	const auto ShaderCoreProperties
+		= DevicePropertyChain.get<vk::PhysicalDeviceShaderCorePropertiesAMD>();
+	const auto ShaderCoreProperties2
+		= DevicePropertyChain.get<vk::PhysicalDeviceShaderCoreProperties2AMD>();
 
 	std::printf(
-		"\tCompute Units: %u\n"
-		"\tShader Engines: %u\n",
-		ShaderCoreProperties2.activeComputeUnitCount,
-		ShaderCoreProperties.shaderEngineCount);
+		"\tCompute Units: %u\n",
+		ShaderCoreProperties.shaderEngineCount
+			* ShaderCoreProperties.shaderArraysPerEngineCount
+			* ShaderCoreProperties.computeUnitsPerShaderArray);
 	return true;
 }
 
@@ -165,32 +165,33 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
 		vk::PhysicalDeviceProperties2, vk::PhysicalDeviceDriverProperties>();
 
-	const auto& DeviceProperties =
-		DevicePropertyChain.get<vk::PhysicalDeviceProperties2>();
-	const auto& DeviceDriverProperties =
-		DevicePropertyChain.get<vk::PhysicalDeviceDriverProperties>();
+	const auto& DeviceProperties
+		= DevicePropertyChain.get<vk::PhysicalDeviceProperties2>();
+	const auto& DeviceDriverProperties
+		= DevicePropertyChain.get<vk::PhysicalDeviceDriverProperties>();
 
 	const auto MemoryPropertyChain = PhysicalDevice.getMemoryProperties2<
 		vk::PhysicalDeviceMemoryProperties2,
 		vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
-	const auto& MemoryProperties =
-		MemoryPropertyChain.get<vk::PhysicalDeviceMemoryProperties2>();
+	const auto& MemoryProperties
+		= MemoryPropertyChain.get<vk::PhysicalDeviceMemoryProperties2>();
 
-	const auto& MemoryBudgetProperties =
-		MemoryPropertyChain.get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
+	const auto& MemoryBudgetProperties
+		= MemoryPropertyChain
+			  .get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
 
 	/// Get device-local heap
 
-	const std::uint32_t VRAMHeapIndex =
-		FindVRAMHeapIndex(MemoryProperties.memoryProperties).value_or(0);
+	const std::uint32_t VRAMHeapIndex
+		= FindVRAMHeapIndex(MemoryProperties.memoryProperties).value_or(0);
 
 	// The heap budget is how much the current process is allowed to allocate
 	// from the heap. We compare it to the total amount of memory available
 	// to determine how much "usable" free memory there is left
-	const vk::DeviceSize MemTotal =
-		MemoryProperties.memoryProperties.memoryHeaps[VRAMHeapIndex].size;
-	const vk::DeviceSize MemUsed =
-		MemTotal - MemoryBudgetProperties.heapBudget[VRAMHeapIndex];
+	const vk::DeviceSize MemTotal
+		= MemoryProperties.memoryProperties.memoryHeaps[VRAMHeapIndex].size;
+	const vk::DeviceSize MemUsed
+		= MemTotal - MemoryBudgetProperties.heapBudget[VRAMHeapIndex];
 
 	std::printf(
 		"%s : %s\n"
