@@ -157,15 +157,15 @@ bool VendorDetails<VendorID::Intel>(
 	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
 {
 	const char* ASCII_ART[] = {
-		"\e[1;36m###                                  ###",
-		"\e[1;36m###                                  ###",
-		"\e[1;36m      ## ####     ###      ######    ###",
-		"\e[1;36m###   #########   #####  ####  ####  ###",
-		"\e[1;36m###   ###    ###  ###    ###    ###  ###",
-		"\e[1;36m###   ###    ###  ###    ##########  ###",
-		"\e[1;36m###   ###    ###  ###    ###         ###",
-		"\e[1;36m###   ###    ###  ###     ########   ###",
-		"\e[1;36m###   ###    ###   #####    ####     ###",
+		"\e[1;36m███                                  ███",
+		"\e[1;36m███                                  ███",
+		"\e[1;36m      ██ ████     ███      ██████    ███",
+		"\e[1;36m███   █████████   █████  ████  ████  ███",
+		"\e[1;36m███   ███    ███  ███    ███    ███  ███",
+		"\e[1;36m███   ███    ███  ███    ██████████  ███",
+		"\e[1;36m███   ███    ███  ███    ███         ███",
+		"\e[1;36m███   ███    ███  ███     ████████   ███",
+		"\e[1;36m███   ███    ███   █████    ████     ███",
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
@@ -186,22 +186,29 @@ bool VendorDetails<VendorID::Nvidia>(
 			  .get<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>();
 
 	Fetch.push_back(FormatString(
-						"    Streaming Multiprocessors: \e[1m%u\e[0m",
+						"    Streaming Multiprocessors: %u",
 						SMBuiltinsProperties.shaderSMCount)
 						.value());
 
-	Fetch.push_back(FormatString(
-						"    WarpsPerSM: \e[1m%u\e[0m",
-						SMBuiltinsProperties.shaderWarpsPerSM)
-						.value());
+	Fetch.push_back(
+		FormatString(
+			"    WarpsPerSM: %u", SMBuiltinsProperties.shaderWarpsPerSM)
+			.value());
 
 	const char* ASCII_ART[] = {
-		"\e[1;32m#########    ###     ### ### #########   ###      ####     ",
-		"\e[1;32m###    ####  ####   #### ### ###    ###  ###     ######    ",
-		"\e[1;32m###     ####  ###   ###  ### ###     ### ###    ###  ###   ",
-		"\e[1;32m###      ###   ### ###   ### ###     ### ###   ###    ###  ",
-		"\e[1;32m###      ###    #####    ### ###    ###  ###  ############ ",
-		"\e[1;32m###      ###     ###     ### #########   ### ####      ####",
+		"\e[92m                     ████████████████████████   ",
+		"\e[92m               ██████      ██████████████████   ",
+		"\e[92m            ███      █████      █████████████   ",
+		"\e[92m         ████   █████    █████     ██████████   ",
+		"\e[92m       ████   ████   █       ████   █████████   ",
+		"\e[92m     ████   ████     ███     ████    ████████   ",
+		"\e[92m      ████   ████    █████████     ██████████   ",
+		"\e[92m        ███    ███   █████      ████   ██████   ",
+		"\e[92m         █████   ████       █████      ██████   ",
+		"\e[92m           █████     ████████       █████████   ",
+		"\e[92m               ██████          ██████████████   ",
+		"\e[92m                     ████████████████████████   ",
+		"\e[1;37m                   NVIDIA",
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
@@ -224,19 +231,19 @@ bool VendorDetails<VendorID::AMD>(
 		= DevicePropertyChain.get<vk::PhysicalDeviceShaderCoreProperties2AMD>();
 
 	Fetch.push_back(FormatString(
-						"    Compute Units: \e[1m%u\e[0m",
+						"    Compute Units: %u",
 						ShaderCoreProperties.shaderEngineCount
 							* ShaderCoreProperties.shaderArraysPerEngineCount
 							* ShaderCoreProperties.computeUnitsPerShaderArray)
 						.value());
 
 	const char* ASCII_ART[] = {
-		"\e[1;31m    ####      ###       ###  ########    \e[1;32m  ##########",
-		"\e[1;31m   ######     #####   #####  ###    ###  \e[1;32m    ########",
-		"\e[1;31m  ###  ###    #############  ###      ## \e[1;32m   #     ###",
-		"\e[1;31m ###    ###   ###  ###  ###  ###      ## \e[1;32m ###     ###",
-		"\e[1;31m############  ###       ###  ###    ###  \e[1;32m########  ##",
-		"\e[1;31m###      ###  ###       ###  #########   \e[1;32m######     #",
+		"\e[37m    ███     ███      ███ █████████  \e[2;32m  █████████",
+		"\e[37m   █████    █████  █████ ███    ███ \e[2;32m    ███████",
+		"\e[37m  ███ ███   ████████████ ███     ███\e[2;32m   █    ███",
+		"\e[37m ███   ███  ███  ██  ███ ███     ███\e[2;32m  ██    ███",
+		"\e[37m███████████ ███      ███ ███    ███ \e[2;32m ███████ ██",
+		"\e[37m███     ███ ███      ███ █████████  \e[2;32m █████    █",
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
@@ -306,7 +313,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 						.value());
 
 	Fetch.push_back(FormatString(
-						"    VRAM: %s / %s : \e[1m%%%f\e[0m",
+						"    VRAM: %s / %s : %%%f\e[0m",
 						FormatByteCount(MemUsed).c_str(),
 						FormatByteCount(MemTotal).c_str(),
 						MemUsed / static_cast<std::float_t>(MemTotal))
@@ -331,11 +338,18 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	}
 	}
 
+	std::size_t ArtWidth = 0;
+	for( const auto& Line : Art )
+	{
+		ArtWidth = std::max(ArtWidth, std::strlen(Line));
+	}
+
 	for( std::size_t CurLine = 0; CurLine < std::max(Art.size(), Fetch.size());
 		 ++CurLine )
 	{
 		std::printf(
-			" %-60s\e[0m %s\n", CurLine < Art.size() ? Art[CurLine] : "",
+			" %-*s\e[0m %s\n", ArtWidth,
+			CurLine < Art.size() ? Art[CurLine] : "",
 			CurLine < Fetch.size() ? Fetch[CurLine].c_str() : "");
 	}
 	std::putchar('\n');
