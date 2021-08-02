@@ -150,12 +150,13 @@ bool VendorDetails<VendorID::Nvidia>(
 			  .get<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>();
 
 	Fetch.push_back(FormatString(
-						"\tStreaming Multiprocessors: %u",
+						"    Streaming Multiprocessors: %u",
 						SMBuiltinsProperties.shaderSMCount)
 						.value());
 
 	Fetch.push_back(
-		FormatString("\tWarpsPerSM: %u", SMBuiltinsProperties.shaderWarpsPerSM)
+		FormatString(
+			"    WarpsPerSM: %u", SMBuiltinsProperties.shaderWarpsPerSM)
 			.value());
 
 	return true;
@@ -176,7 +177,7 @@ bool VendorDetails<VendorID::AMD>(
 		= DevicePropertyChain.get<vk::PhysicalDeviceShaderCoreProperties2AMD>();
 
 	Fetch.push_back(FormatString(
-						"\tCompute Units: %u",
+						"    Compute Units: %u",
 						ShaderCoreProperties.shaderEngineCount
 							* ShaderCoreProperties.shaderArraysPerEngineCount
 							* ShaderCoreProperties.computeUnitsPerShaderArray)
@@ -228,25 +229,25 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 	Fetch.push_back(
 		FormatString(
-			"\tVendor: %4x : (%s)", DeviceProperties.properties.vendorID,
+			"    Vendor: %4x : (%s)", DeviceProperties.properties.vendorID,
 			VendorName(
 				static_cast<VendorID>(DeviceProperties.properties.vendorID)))
 			.value());
 
 	Fetch.push_back(
 		FormatString(
-			"\tAPI: %s",
+			"    API: %s",
 			FormatVersion(DeviceProperties.properties.apiVersion).c_str())
 			.value());
 
 	Fetch.push_back(FormatString(
-						"\tDriver: %s : %s",
+						"    Driver: %s : %s",
 						DeviceDriverProperties.driverName.data(),
 						DeviceDriverProperties.driverInfo.data())
 						.value());
 
 	Fetch.push_back(FormatString(
-						"\tVRAM: %s / %s : %%%f",
+						"    VRAM: %s / %s : %%%f",
 						FormatByteCount(MemUsed).c_str(),
 						FormatByteCount(MemTotal).c_str(),
 						MemUsed / static_cast<std::float_t>(MemTotal))
@@ -271,9 +272,19 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	}
 	}
 
+	const char* ASCII[]
+		= {"# # # # #   # #  #  ## #", "# # # # #   ##  ### ## #",
+		   " #  ### ### # # # # # ##"};
+	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII)>;
+	std::size_t       CurLine      = 0;
+
 	for( const auto& Line : Fetch )
 	{
-		std::printf("%s\n", Line.c_str());
+		std::printf(
+			"\e[1;31m%-40s\e[0m %s\n",
+			CurLine < ASCII_HEIGHT ? ASCII[CurLine] : "", Line.c_str());
+
+		++CurLine;
 	}
 
 	return true;
