@@ -348,7 +348,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		 ++CurLine )
 	{
 		std::printf(
-			" %-*s\e[0m %s\n", ArtWidth,
+			" %-.*s\e[0m %s\n", ArtWidth,
 			CurLine < Art.size() ? Art[CurLine] : "",
 			CurLine < Fetch.size() ? Fetch[CurLine].c_str() : "");
 	}
