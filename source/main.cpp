@@ -133,9 +133,16 @@ std::optional<std::uint32_t> FindVRAMHeapIndex(
 
 std::string FormatVersion(std::uint32_t Version)
 {
-	return std::to_string(VK_VERSION_MAJOR(Version)) + "."
-		 + std::to_string(VK_VERSION_MINOR(Version)) + "."
-		 + std::to_string(VK_VERSION_PATCH(Version));
+	const std::size_t Size
+		= std::snprintf(
+			  nullptr, 0, "%u.%u.%u", VK_VERSION_MAJOR(Version),
+			  VK_VERSION_MINOR(Version), VK_VERSION_PATCH(Version))
+		+ 1;
+	const auto Buffer = std::make_unique<char[]>(Size);
+	std::snprintf(
+		Buffer.get(), Size, "%u.%u.%u", VK_VERSION_MAJOR(Version),
+		VK_VERSION_MINOR(Version), VK_VERSION_PATCH(Version));
+	return std::string(Buffer.get(), Buffer.get() + Size - 1);
 }
 
 template<VendorID Vendor>
