@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <optional>
+#include <span>
 
 #define VULKAN_HPP_NO_EXCEPTIONS
 #include <vulkan/vulkan.hpp>
@@ -49,6 +50,7 @@ std::optional<std::string>
 }
 
 using FetchLog = std::vector<std::string>;
+using FetchArt = std::span<const char*>;
 
 enum class VendorID : std::uint32_t
 {
@@ -132,14 +134,15 @@ std::string FormatVersion(std::uint32_t Version)
 }
 
 template<VendorID Vendor>
-bool VendorDetails(FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
+bool VendorDetails(
+	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
 {
 	return true;
 }
 
 template<>
 bool VendorDetails<VendorID::Nvidia>(
-	FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
+	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
 		vk::PhysicalDeviceProperties2,
@@ -150,21 +153,21 @@ bool VendorDetails<VendorID::Nvidia>(
 			  .get<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>();
 
 	Fetch.push_back(FormatString(
-						"    Streaming Multiprocessors: %u",
+						"    Streaming Multiprocessors: \e[1m%u\e[0m",
 						SMBuiltinsProperties.shaderSMCount)
 						.value());
 
-	Fetch.push_back(
-		FormatString(
-			"    WarpsPerSM: %u", SMBuiltinsProperties.shaderWarpsPerSM)
-			.value());
+	Fetch.push_back(FormatString(
+						"    WarpsPerSM: \e[1m%u\e[0m",
+						SMBuiltinsProperties.shaderWarpsPerSM)
+						.value());
 
 	return true;
 }
 
 template<>
 bool VendorDetails<VendorID::AMD>(
-	FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
+	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
 		vk::PhysicalDeviceProperties2,
@@ -177,12 +180,26 @@ bool VendorDetails<VendorID::AMD>(
 		= DevicePropertyChain.get<vk::PhysicalDeviceShaderCoreProperties2AMD>();
 
 	Fetch.push_back(FormatString(
-						"    Compute Units: %u",
+						"    Compute Units: \e[1m%u\e[0m",
 						ShaderCoreProperties.shaderEngineCount
 							* ShaderCoreProperties.shaderArraysPerEngineCount
 							* ShaderCoreProperties.computeUnitsPerShaderArray)
 						.value());
 
+	const char* ASCII_ART[]
+		= {"",
+		   // clang-format off
+		   "\e[1m     ####      ###       ###  ########      ########## ",
+		   "\e[1m    ######     #####   #####  ###    ###      ######## ",
+		   "\e[1m   ###  ###    #############  ###      ##    #     ### ",
+		   "\e[1m  ###    ###   ###  ###  ###  ###      ##  ###     ### ",
+		   "\e[1m ############  ###       ###  ###    ###  ########  ## ",
+		   "\e[1m ###      ###  ###       ###  #########   ######     # ",
+		   // clang-format on
+		   ""};
+	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
+
+	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
 	return true;
 }
 
@@ -219,11 +236,12 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	const vk::DeviceSize MemUsed
 		= MemTotal - MemoryBudgetProperties.heapBudget[VRAMHeapIndex];
 
-	FetchLog Fetch;
+	FetchLog Fetch = {};
+	FetchArt Art   = {};
 
 	Fetch.push_back(
 		FormatString(
-			"%s : %s", DeviceProperties.properties.deviceName.data(),
+			"\e[1m%s\e[0m : %s", DeviceProperties.properties.deviceName.data(),
 			vk::to_string(DeviceProperties.properties.deviceType).c_str())
 			.value());
 
@@ -247,7 +265,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 						.value());
 
 	Fetch.push_back(FormatString(
-						"    VRAM: %s / %s : %%%f",
+						"    VRAM: %s / %s : \e[1m%%%f\e[0m",
 						FormatByteCount(MemUsed).c_str(),
 						FormatByteCount(MemTotal).c_str(),
 						MemUsed / static_cast<std::float_t>(MemTotal))
@@ -257,34 +275,27 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	{
 	case VendorID::AMD:
 	{
-		VendorDetails<VendorID::AMD>(Fetch, PhysicalDevice);
+		VendorDetails<VendorID::AMD>(Art, Fetch, PhysicalDevice);
 		break;
 	}
 	case VendorID::Nvidia:
 	{
-		VendorDetails<VendorID::Nvidia>(Fetch, PhysicalDevice);
+		VendorDetails<VendorID::Nvidia>(Art, Fetch, PhysicalDevice);
 		break;
 	}
 	case VendorID::Intel:
 	{
-		VendorDetails<VendorID::Intel>(Fetch, PhysicalDevice);
+		VendorDetails<VendorID::Intel>(Art, Fetch, PhysicalDevice);
 		break;
 	}
 	}
 
-	const char* ASCII[]
-		= {"# # # # #   # #  #  ## #", "# # # # #   ##  ### ## #",
-		   " #  ### ### # # # # # ##"};
-	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII)>;
-	std::size_t       CurLine      = 0;
-
-	for( const auto& Line : Fetch )
+	for( std::size_t CurLine = 0; CurLine < std::max(Art.size(), Fetch.size());
+		 ++CurLine )
 	{
 		std::printf(
-			"\e[1;31m%-40s\e[0m %s\n",
-			CurLine < ASCII_HEIGHT ? ASCII[CurLine] : "", Line.c_str());
-
-		++CurLine;
+			"%-60s\e[0m %s\n", CurLine < Art.size() ? Art[CurLine] : "",
+			CurLine < Fetch.size() ? Fetch[CurLine].c_str() : "");
 	}
 
 	return true;
