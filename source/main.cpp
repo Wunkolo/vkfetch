@@ -107,7 +107,12 @@ std::string FormatByteCount(std::size_t ByteCount)
 			break;
 		ByteSize /= 1_KiB;
 	}
-	return std::to_string(ByteSize) + " " + SizeUnits.at(Index);
+	const std::size_t Size
+		= std::snprintf(nullptr, 0, "%.2f %s", ByteSize, SizeUnits.at(Index))
+		+ 1;
+	const auto Buffer = std::make_unique<char[]>(Size);
+	std::snprintf(Buffer.get(), Size, "%.2f %s", ByteSize, SizeUnits.at(Index));
+	return std::string(Buffer.get(), Buffer.get() + Size - 1);
 }
 
 std::optional<std::uint32_t> FindVRAMHeapIndex(
@@ -219,12 +224,12 @@ bool VendorDetails<VendorID::AMD>(
 						.value());
 
 	const char* ASCII_ART[] = {
-		"\e[1m    ####      ###       ###  ########      ##########",
-		"\e[1m   ######     #####   #####  ###    ###      ########",
-		"\e[1m  ###  ###    #############  ###      ##    #     ###",
-		"\e[1m ###    ###   ###  ###  ###  ###      ##  ###     ###",
-		"\e[1m############  ###       ###  ###    ###  ########  ##",
-		"\e[1m###      ###  ###       ###  #########   ######     #",
+		"\e[1;31m    ####      ###       ###  ########    \e[1;32m  ##########",
+		"\e[1;31m   ######     #####   #####  ###    ###  \e[1;32m    ########",
+		"\e[1;31m  ###  ###    #############  ###      ## \e[1;32m   #     ###",
+		"\e[1;31m ###    ###   ###  ###  ###  ###      ## \e[1;32m ###     ###",
+		"\e[1;31m############  ###       ###  ###    ###  \e[1;32m########  ##",
+		"\e[1;31m###      ###  ###       ###  #########   \e[1;32m######     #",
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
@@ -326,6 +331,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 			" %-60s\e[0m %s\n", CurLine < Art.size() ? Art[CurLine] : "",
 			CurLine < Fetch.size() ? Fetch[CurLine].c_str() : "");
 	}
+	std::putchar('\n');
 
 	return true;
 }
