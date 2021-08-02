@@ -157,8 +157,8 @@ bool VendorDetails<VendorID::Intel>(
 	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
 {
 	const char* ASCII_ART[] = {
-		"\e[1;36m###\e[0m                                  ###",
-		"\e[1;36m###\e[0m                                  ###",
+		"\e[1;36m###                                  ###",
+		"\e[1;36m###                                  ###",
 		"\e[1;36m      ## ####     ###      ######    ###",
 		"\e[1;36m###   #########   #####  ####  ####  ###",
 		"\e[1;36m###   ###    ###  ###    ###    ###  ###",
