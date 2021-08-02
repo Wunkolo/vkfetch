@@ -141,6 +141,27 @@ bool VendorDetails(
 }
 
 template<>
+bool VendorDetails<VendorID::Intel>(
+	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
+{
+	const char* ASCII_ART[] = {
+		"\e[1;36m###\e[0m                                  ###",
+		"\e[1;36m###\e[0m                                  ###",
+		"\e[1;36m      ## ####     ###      ######    ###",
+		"\e[1;36m###   #########   #####  ####  ####  ###",
+		"\e[1;36m###   ###    ###  ###    ###    ###  ###",
+		"\e[1;36m###   ###    ###  ###    ##########  ###",
+		"\e[1;36m###   ###    ###  ###    ###         ###",
+		"\e[1;36m###   ###    ###  ###     ########   ###",
+		"\e[1;36m###   ###    ###   #####    ####     ###",
+	};
+	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
+
+	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
+	return true;
+}
+
+template<>
 bool VendorDetails<VendorID::Nvidia>(
 	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
 {
@@ -162,6 +183,17 @@ bool VendorDetails<VendorID::Nvidia>(
 						SMBuiltinsProperties.shaderWarpsPerSM)
 						.value());
 
+	const char* ASCII_ART[] = {
+		"\e[1;32m#########    ###     ### ### #########   ###      ####     ",
+		"\e[1;32m###    ####  ####   #### ### ###    ###  ###     ######    ",
+		"\e[1;32m###     ####  ###   ###  ### ###     ### ###    ###  ###   ",
+		"\e[1;32m###      ###   ### ###   ### ###     ### ###   ###    ###  ",
+		"\e[1;32m###      ###    #####    ### ###    ###  ###  ############ ",
+		"\e[1;32m###      ###     ###     ### #########   ### ####      ####",
+	};
+	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
+
+	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
 	return true;
 }
 
@@ -186,17 +218,14 @@ bool VendorDetails<VendorID::AMD>(
 							* ShaderCoreProperties.computeUnitsPerShaderArray)
 						.value());
 
-	const char* ASCII_ART[]
-		= {"",
-		   // clang-format off
-		   "\e[1m     ####      ###       ###  ########      ########## ",
-		   "\e[1m    ######     #####   #####  ###    ###      ######## ",
-		   "\e[1m   ###  ###    #############  ###      ##    #     ### ",
-		   "\e[1m  ###    ###   ###  ###  ###  ###      ##  ###     ### ",
-		   "\e[1m ############  ###       ###  ###    ###  ########  ## ",
-		   "\e[1m ###      ###  ###       ###  #########   ######     # ",
-		   // clang-format on
-		   ""};
+	const char* ASCII_ART[] = {
+		"\e[1m    ####      ###       ###  ########      ##########",
+		"\e[1m   ######     #####   #####  ###    ###      ########",
+		"\e[1m  ###  ###    #############  ###      ##    #     ###",
+		"\e[1m ###    ###   ###  ###  ###  ###      ##  ###     ###",
+		"\e[1m############  ###       ###  ###    ###  ########  ##",
+		"\e[1m###      ###  ###       ###  #########   ######     #",
+	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
 	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
@@ -294,7 +323,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		 ++CurLine )
 	{
 		std::printf(
-			"%-60s\e[0m %s\n", CurLine < Art.size() ? Art[CurLine] : "",
+			" %-60s\e[0m %s\n", CurLine < Art.size() ? Art[CurLine] : "",
 			CurLine < Fetch.size() ? Fetch[CurLine].c_str() : "");
 	}
 
