@@ -9,6 +9,31 @@
 #define VULKAN_HPP_NO_EXCEPTIONS
 #include <vulkan/vulkan.hpp>
 
+#ifdef _WIN32
+#define NOMINMAX
+#include <Windows.h>
+// Statically enables "ENABLE_VIRTUAL_TERMINAL_PROCESSING" for the terminal
+// at runtime to allow for unix-style escape sequences. 
+static const bool _WndV100Enabled = []() -> bool
+	{
+		const auto Handle = GetStdHandle(STD_OUTPUT_HANDLE);
+		DWORD ConsoleMode;
+		GetConsoleMode(
+			Handle,
+			&ConsoleMode
+		);
+		SetConsoleMode(
+			Handle,
+			ConsoleMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING
+		);
+		GetConsoleMode(
+			Handle,
+			&ConsoleMode
+		);
+		return ConsoleMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	}();
+#endif
+
 constexpr std::size_t operator""_KiB(unsigned long long int Size)
 {
 	return 1024ULL * Size;
@@ -156,16 +181,16 @@ template<>
 bool VendorDetails<VendorID::Intel>(
 	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
 {
-	const char* ASCII_ART[] = {
-		"\e[1;36m███                                  ███",
-		"\e[1;36m███                                  ███",
-		"\e[1;36m      ██ ████     ███      ██████    ███",
-		"\e[1;36m███   █████████   █████  ████  ████  ███",
-		"\e[1;36m███   ███    ███  ███    ███    ███  ███",
-		"\e[1;36m███   ███    ███  ███    ██████████  ███",
-		"\e[1;36m███   ███    ███  ███    ███         ███",
-		"\e[1;36m███   ███    ███  ███     ████████   ███",
-		"\e[1;36m███   ███    ███   █████    ████     ███",
+	static const char* ASCII_ART[] = {
+		"\033[1;36m███                                  ███",
+		"\033[1;36m███                                  ███",
+		"\033[1;36m      ██ ████     ███      ██████    ███",
+		"\033[1;36m███   █████████   █████  ████  ████  ███",
+		"\033[1;36m███   ███    ███  ███    ███    ███  ███",
+		"\033[1;36m███   ███    ███  ███    ██████████  ███",
+		"\033[1;36m███   ███    ███  ███    ███         ███",
+		"\033[1;36m███   ███    ███  ███     ████████   ███",
+		"\033[1;36m███   ███    ███   █████    ████     ███",
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
@@ -195,20 +220,20 @@ bool VendorDetails<VendorID::Nvidia>(
 			"    WarpsPerSM: %u", SMBuiltinsProperties.shaderWarpsPerSM)
 			.value());
 
-	const char* ASCII_ART[] = {
-		"\e[92m                     ████████████████████████   ",
-		"\e[92m               ██████      ██████████████████   ",
-		"\e[92m            ███      █████      █████████████   ",
-		"\e[92m         ████   █████    █████     ██████████   ",
-		"\e[92m       ████   ████   █       ████   █████████   ",
-		"\e[92m     ████   ████     ███     ████    ████████   ",
-		"\e[92m      ████   ████    █████████     ██████████   ",
-		"\e[92m        ███    ███   █████      ████   ██████   ",
-		"\e[92m         █████   ████       █████      ██████   ",
-		"\e[92m           █████     ████████       █████████   ",
-		"\e[92m               ██████          ██████████████   ",
-		"\e[92m                     ████████████████████████   ",
-		"\e[1;37m                   NVIDIA",
+	static const char* ASCII_ART[] = {
+		"\033[92m                     ████████████████████████   ",
+		"\033[92m               ██████      ██████████████████   ",
+		"\033[92m            ███      █████      █████████████   ",
+		"\033[92m         ████   █████    █████     ██████████   ",
+		"\033[92m       ████   ████   █       ████   █████████   ",
+		"\033[92m     ████   ████     ███     ████    ████████   ",
+		"\033[92m      ████   ████    █████████     ██████████   ",
+		"\033[92m        ███    ███   █████      ████   ██████   ",
+		"\033[92m         █████   ████       █████      ██████   ",
+		"\033[92m           █████     ████████       █████████   ",
+		"\033[92m               ██████          ██████████████   ",
+		"\033[92m                     ████████████████████████   ",
+		"\033[1;37m                   NVIDIA",
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
@@ -237,13 +262,13 @@ bool VendorDetails<VendorID::AMD>(
 							* ShaderCoreProperties.computeUnitsPerShaderArray)
 						.value());
 
-	const char* ASCII_ART[] = {
-		"\e[37m    ███     ███      ███ █████████  \e[2;32m  █████████",
-		"\e[37m   █████    █████  █████ ███    ███ \e[2;32m    ███████",
-		"\e[37m  ███ ███   ████████████ ███     ███\e[2;32m   █    ███",
-		"\e[37m ███   ███  ███  ██  ███ ███     ███\e[2;32m  ██    ███",
-		"\e[37m███████████ ███      ███ ███    ███ \e[2;32m ███████ ██",
-		"\e[37m███     ███ ███      ███ █████████  \e[2;32m █████    █",
+	static const char* ASCII_ART[] = {
+		"\033[37m    ███     ███      ███ █████████  \033[2;32m  █████████",
+		"\033[37m   █████    █████  █████ ███    ███ \033[2;32m    ███████",
+		"\033[37m  ███ ███   ████████████ ███     ███\033[2;32m   █    ███",
+		"\033[37m ███   ███  ███  ██  ███ ███     ███\033[2;32m  ██    ███",
+		"\033[37m███████████ ███      ███ ███    ███ \033[2;32m ███████ ██",
+		"\033[37m███     ███ ███      ███ █████████  \033[2;32m █████    █",
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
@@ -289,7 +314,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 	Fetch.push_back(
 		FormatString(
-			"\e[1m%s\e[0m : %s", DeviceProperties.properties.deviceName.data(),
+			"\033[1m%s\033[0m : %s", DeviceProperties.properties.deviceName.data(),
 			vk::to_string(DeviceProperties.properties.deviceType).c_str())
 			.value());
 
@@ -313,7 +338,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 						.value());
 
 	Fetch.push_back(FormatString(
-						"    VRAM: %s / %s : %%%f\e[0m",
+						"    VRAM: %s / %s : %%%f\033[0m",
 						FormatByteCount(MemUsed).c_str(),
 						FormatByteCount(MemTotal).c_str(),
 						MemUsed / static_cast<std::float_t>(MemTotal))
@@ -348,7 +373,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		 ++CurLine )
 	{
 		std::printf(
-			" %-.*s\e[0m %s\n", ArtWidth,
+			" %-.*s\033[0m %s\n", int(ArtWidth),
 			CurLine < Art.size() ? Art[CurLine] : "",
 			CurLine < Fetch.size() ? Fetch[CurLine].c_str() : "");
 	}
