@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.20.0 )
+cmake_minimum_required( VERSION 3.21.0 )
 project( vkfetch CXX )
 
 ### Standard
@@ -30,10 +30,9 @@ target_include_directories(
 	vkfetch
 	PRIVATE
 	include
-	${Vulkan_INCLUDE_DIRS}
 )
 target_link_libraries(
 	vkfetch
 	PRIVATE
-	${Vulkan_LIBRARIES}
+	Vulkan::Vulkan
 )
