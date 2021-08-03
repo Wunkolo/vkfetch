@@ -23,8 +23,8 @@ jobs:
           }
         - {
             os: ubuntu-latest,
-            cc: "gcc",
-            cxx: "g++"
+            cc: "gcc-10",
+            cxx: "g++-10"
           }
 
     steps:
@@ -34,6 +34,9 @@ jobs:
       uses: humbletim/setup-vulkan-sdk@v1.0.2
 
     - name: Configure CMake
+      env:
+        CC: ${{matrix.config.cc}}
+        CXX: ${{matrix.config.cxx}}
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
