@@ -1,4 +1,4 @@
-# vkfetch [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+# vkfetch [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Build](https://github.com/Wunkolo/vkfetch/actions/workflows/cmake.yml/badge.svg)](https://github.com/Wunkolo/vkfetch/actions/workflows/cmake.yml)
 
 `vkfetch` is a fetch-program that displays basic information about your vulkan-compatible graphic card(s)!
 
