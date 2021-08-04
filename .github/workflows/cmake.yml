@@ -18,11 +18,13 @@ jobs:
         config:
         - {
             os: windows-latest,
+            artifact: vkfetch.exe
             cc: "cl",
             cxx: "cl"
           }
         - {
             os: ubuntu-latest,
+            artifact: vkfetch
             cc: "gcc-10",
             cxx: "g++-10"
           }
@@ -45,4 +47,11 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build
       run: ctest -C ${{env.BUILD_TYPE}}
-      
+
+    - name: GitHub Releases
+      uses: fnkr/github-action-ghr@v1.3
+      if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GHR_COMPRESS: zip
+          GHR_PATH: build/${{ matrix.config.artifact }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
