@@ -115,7 +115,8 @@ enum class VendorID : std::uint32_t
 	Nvidia   = 0x10DE,
 	ARM      = 0x13B5,
 	Qualcomm = 0x5143,
-	Intel    = 0x8086
+	Intel    = 0x8086,
+	Unknown  = 0xFFFF
 };
 
 const char* VendorName(VendorID Vendor)
@@ -205,6 +206,31 @@ template<VendorID Vendor>
 bool VendorDetails(
 	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
 {
+	return true;
+}
+
+template<>
+bool VendorDetails<VendorID::Unknown>(
+	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
+{
+	static const char* ASCII_ART[] = {
+		"\033[2;31m        ████████████████                     ",
+		"\033[2;31m    ██████████████████████████               ",
+		"\033[2;31m  █████████████         ██████████           ",
+		"\033[2;31m █████████                     ██████        ",
+		"\033[2;31m ███████     ████      ████         ████     ",
+		"\033[2;31m  █████      ████      ████            ███   ",
+		"\033[2;31m   ████       ████    ████               ██  ",
+		"\033[2;31m    ████      ████    ████                 █ ",
+		"\033[2;31m      ███      ████  ████                    ",
+		"\033[2;31m        ██     ████  ████                    ",
+		"\033[2;31m                ████████                     ",
+		"\033[2;31m                ████████                     ",
+		"\033[2;31m                 ██████                      ",
+	};
+	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
+
+	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
 	return true;
 }
 
@@ -416,6 +442,12 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	case VendorID::Intel:
 	{
 		VendorDetails<VendorID::Intel>(Art, Fetch, PhysicalDevice);
+		break;
+	}
+	default:
+	case VendorID::Unknown:
+	{
+		VendorDetails<VendorID::Unknown>(Art, Fetch, PhysicalDevice);
 		break;
 	}
 	}
