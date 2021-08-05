@@ -304,13 +304,10 @@ bool VendorDetails<VendorID::AMD>(
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
 		vk::PhysicalDeviceProperties2,
-		vk::PhysicalDeviceShaderCorePropertiesAMD,
-		vk::PhysicalDeviceShaderCoreProperties2AMD>();
+		vk::PhysicalDeviceShaderCorePropertiesAMD>();
 
 	const auto ShaderCoreProperties
 		= DevicePropertyChain.get<vk::PhysicalDeviceShaderCorePropertiesAMD>();
-	const auto ShaderCoreProperties2
-		= DevicePropertyChain.get<vk::PhysicalDeviceShaderCoreProperties2AMD>();
 
 	Fetch.push_back(FormatString(
 						"    Compute Units: %u",
