@@ -31,6 +31,7 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}}
       
     - name: Upload Artifact
+      if: github.ref == 'refs/heads/main'
       uses: actions/upload-artifact@v1
       with:
         name: "linux"
