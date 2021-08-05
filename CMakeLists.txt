@@ -23,8 +23,9 @@ find_package( Vulkan REQUIRED )
 
 add_executable(
 	vkfetch
-	source/VulkanUtil.cpp
 	source/main.cpp
+	source/Format.cpp
+	source/VulkanUtil.cpp
 )
 
 target_include_directories(
