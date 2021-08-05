@@ -13,25 +13,15 @@
 #define NOMINMAX
 #include <Windows.h>
 // Statically enables "ENABLE_VIRTUAL_TERMINAL_PROCESSING" for the terminal
-// at runtime to allow for unix-style escape sequences. 
-static const bool _WndV100Enabled = []() -> bool
-	{
-		const auto Handle = GetStdHandle(STD_OUTPUT_HANDLE);
-		DWORD ConsoleMode;
-		GetConsoleMode(
-			Handle,
-			&ConsoleMode
-		);
-		SetConsoleMode(
-			Handle,
-			ConsoleMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING
-		);
-		GetConsoleMode(
-			Handle,
-			&ConsoleMode
-		);
-		return ConsoleMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-	}();
+// at runtime to allow for unix-style escape sequences.
+static const bool _WndV100Enabled = []() -> bool {
+	const auto Handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD      ConsoleMode;
+	GetConsoleMode(Handle, &ConsoleMode);
+	SetConsoleMode(Handle, ConsoleMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+	GetConsoleMode(Handle, &ConsoleMode);
+	return ConsoleMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+}();
 #endif
 
 constexpr std::size_t operator""_KiB(unsigned long long int Size)
@@ -72,6 +62,35 @@ std::optional<std::string>
 	const auto Buffer = std::make_unique<char[]>(Size);
 	std::snprintf(Buffer.get(), Size, Format.c_str(), Arguments...);
 	return std::string(Buffer.get(), Buffer.get() + Size - 1);
+}
+
+std::optional<std::string>
+	FormatMeter(const std::size_t Width, const std::float_t Completion)
+{
+	if( !Width || Width < 3 || Completion < 0.0f || !std::isfinite(Completion) )
+	{
+		return std::nullopt;
+	}
+
+	std::string Result;
+	Result += "[";
+
+	for( std::size_t Index = 0; Index < Width - 2; ++Index )
+	{
+		const std::float_t BarPhase
+			= Index / static_cast<std::float_t>(Width - 2);
+		if( BarPhase <= Completion )
+		{
+			Result += "|";
+		}
+		else
+		{
+			Result += " ";
+		}
+	}
+
+	Result += "]";
+	return Result;
 }
 
 using FetchLog = std::vector<std::string>;
@@ -314,21 +333,17 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 	Fetch.push_back(
 		FormatString(
-			"\033[1m%s\033[0m : %s", DeviceProperties.properties.deviceName.data(),
+			"\033[1m%s\033[0m : %s",
+			DeviceProperties.properties.deviceName.data(),
 			vk::to_string(DeviceProperties.properties.deviceType).c_str())
 			.value());
 
 	Fetch.push_back(
 		FormatString(
-			"    Vendor: %4x : (%s)", DeviceProperties.properties.vendorID,
+			"    Device: %04x:%04x (%s)", DeviceProperties.properties.deviceID,
+			DeviceProperties.properties.vendorID,
 			VendorName(
 				static_cast<VendorID>(DeviceProperties.properties.vendorID)))
-			.value());
-
-	Fetch.push_back(
-		FormatString(
-			"    API: %s",
-			FormatVersion(DeviceProperties.properties.apiVersion).c_str())
 			.value());
 
 	Fetch.push_back(FormatString(
@@ -337,12 +352,24 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 						DeviceDriverProperties.driverInfo.data())
 						.value());
 
+	Fetch.push_back(
+		FormatString(
+			"    API: %s",
+			FormatVersion(DeviceProperties.properties.apiVersion).c_str())
+			.value());
+
+	const std::float_t MemoryPressure
+		= MemUsed / static_cast<std::float_t>(MemTotal);
+
 	Fetch.push_back(FormatString(
-						"    VRAM: %s / %s : %%%f\033[0m",
-						FormatByteCount(MemUsed).c_str(),
-						FormatByteCount(MemTotal).c_str(),
-						MemUsed / static_cast<std::float_t>(MemTotal))
+						"    VRAM: %s / %s", FormatByteCount(MemUsed).c_str(),
+						FormatByteCount(MemTotal).c_str())
 						.value());
+
+	Fetch.push_back(
+		FormatString(
+			"    %s %%%.4f", FormatMeter(30, MemoryPressure).value().c_str())
+			.value());
 
 	switch( static_cast<VendorID>(DeviceProperties.properties.vendorID) )
 	{
