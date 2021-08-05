@@ -37,6 +37,7 @@ jobs:
         path: "build/vkfetch"
 
   create-release:
+    if: github.ref == 'refs/heads/main'
     needs: [linux-build]
     runs-on: ubuntu-latest
     steps:
@@ -46,7 +47,6 @@ jobs:
         name: "linux"
 
     - name: Create release
-      if: github.ref == 'refs/heads/main'
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
