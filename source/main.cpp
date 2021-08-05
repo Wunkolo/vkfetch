@@ -78,9 +78,21 @@ std::optional<std::string>
 	for( std::size_t Index = 0; Index < Width - 2; ++Index )
 	{
 		const std::float_t BarPhase
-			= Index / static_cast<std::float_t>(Width - 2);
+			= Index / static_cast<std::float_t>(Width - 3);
 		if( BarPhase <= Completion )
 		{
+			if( BarPhase < 0.5f )
+			{
+				Result += "\033[92m";
+			}
+			else if( BarPhase < 0.75f )
+			{
+				Result += "\033[93m";
+			}
+			else
+			{
+				Result += "\033[91m";
+			}
 			Result += "|";
 		}
 		else
@@ -89,7 +101,7 @@ std::optional<std::string>
 		}
 	}
 
-	Result += "]";
+	Result += "\033[0m]";
 	return Result;
 }
 
@@ -361,15 +373,33 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	const std::float_t MemoryPressure
 		= MemUsed / static_cast<std::float_t>(MemTotal);
 
+	static const char* PressureColors[] = {"\033[92m", "\033[93m", "\033[91m"};
+
+	const char* PressureColor;
+	if( MemoryPressure < 0.5f )
+	{
+		PressureColor = PressureColors[0];
+	}
+	else if( MemoryPressure < 0.75f )
+	{
+		PressureColor = PressureColors[1];
+	}
+	else
+	{
+		PressureColor = PressureColors[2];
+	}
+
 	Fetch.push_back(FormatString(
-						"    VRAM: %s / %s", FormatByteCount(MemUsed).c_str(),
+						"    VRAM: %s%s\033[0m / %s", PressureColor,
+						FormatByteCount(MemUsed).c_str(),
 						FormatByteCount(MemTotal).c_str())
 						.value());
 
-	Fetch.push_back(
-		FormatString(
-			"    %s %%%.4f", FormatMeter(30, MemoryPressure).value().c_str())
-			.value());
+	Fetch.push_back(FormatString(
+						"    %s %%%s%3.2f\033[0m",
+						FormatMeter(30, MemoryPressure).value().c_str(),
+						PressureColor, MemoryPressure * 100.0f)
+						.value());
 
 	switch( static_cast<VendorID>(DeviceProperties.properties.vendorID) )
 	{
