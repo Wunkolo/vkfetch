@@ -83,4 +83,16 @@ std::string FormatVersion(std::uint32_t Version)
 	return std::string(Buffer.get(), Buffer.get() + Size - 1);
 }
 
+std::string ReplaceString(
+	std::string Subject, const std::string& Search, const std::string& Replace)
+{
+	size_t Position = 0;
+	while( (Position = Subject.find(Search, Position)) != std::string::npos )
+	{
+		Subject.replace(Position, Search.length(), Replace);
+		Position += Replace.length();
+	}
+	return Subject;
+}
+
 }

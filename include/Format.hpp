@@ -60,4 +60,7 @@ std::string FormatByteCount(std::size_t ByteCount);
 
 std::string FormatVersion(std::uint32_t Version);
 
+std::string ReplaceString(
+	std::string Subject, const std::string& Search, const std::string& Replace);
+
 } // namespace Format
