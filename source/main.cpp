@@ -29,62 +29,73 @@ static const bool _WndV100Enabled = []() -> bool {
 using FetchLog = std::vector<std::string>;
 using FetchArt = std::span<const char*>;
 
+using FetchStyle = std::array<const char*, 4>;
+
 template<Vulkan::Util::VendorID Vendor>
 bool VendorDetails(
-	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
+	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
+	const vk::PhysicalDevice& PhysicalDevice)
 {
 	return true;
 }
 
 template<>
 bool VendorDetails<Vulkan::Util::VendorID::Unknown>(
-	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
+	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
+	const vk::PhysicalDevice& PhysicalDevice)
 {
 	static const char* ASCII_ART[] = {
-		"\033[2;31m        ################                     ",
-		"\033[2;31m    ##########################               ",
-		"\033[2;31m  #############         ##########           ",
-		"\033[2;31m #########                     ######        ",
-		"\033[2;31m #######     ####      ####         ####     ",
-		"\033[2;31m  #####      ####      ####            ###   ",
-		"\033[2;31m   ####       ####    ####               ##  ",
-		"\033[2;31m    ####      ####    ####                 # ",
-		"\033[2;31m      ###      ####  ####                    ",
-		"\033[2;31m        ##     ####  ####                    ",
-		"\033[2;31m                ########                     ",
-		"\033[2;31m                ########                     ",
-		"\033[2;31m                 ######                      ",
+		"       ################                    ",
+		"   ##########################              ",
+		" #############         ##########          ",
+		"#########                     ######       ",
+		"#######     ####      ####         ####    ",
+		" #####      ####      ####            ###  ",
+		"  ####       ####    ####               ## ",
+		"   ####      ####    ####                 #",
+		"     ###      ####  ####                   ",
+		"       ##     ####  ####                   ",
+		"               ########                    ",
+		"               ########                    ",
+		"                ######                     ",
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
 	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
+
+	Style[0] = "\033[2;31m";
 	return true;
 }
 
 template<>
 bool VendorDetails<Vulkan::Util::VendorID::Intel>(
-	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
+	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
+	const vk::PhysicalDevice& PhysicalDevice)
 {
 	static const char* ASCII_ART[] = {
-		"\033[36m ###\033[37m                                  ### ",
-		"\033[36m ###\033[37m                                  ### ",
-		"\033[36m    \033[37m   ## ####     ###      ######    ### ",
-		"\033[37m ###   #########   #####  ####  ####  ### ",
-		"\033[37m ###   ###    ###  ###    ###    ###  ### ",
-		"\033[37m ###   ###    ###  ###    ##########  ### ",
-		"\033[37m ###   ###    ###  ###    ###         ### ",
-		"\033[37m ###   ###    ###  ###     ########   ### ",
-		"\033[37m ###   ###    ###   #####    ####     ### ",
+		"$$$                                  ###",
+		"$$$                                  ###",
+		"      ## ####     ###      ######    ###",
+		"###   #########   #####  ####  ####  ###",
+		"###   ###    ###  ###    ###    ###  ###",
+		"###   ###    ###  ###    ##########  ###",
+		"###   ###    ###  ###    ###         ###",
+		"###   ###    ###  ###     ########   ###",
+		"###   ###    ###   #####    ####     ###",
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
 	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
+
+	Style[0] = "\033[37m";
+	Style[1] = "\033[36m";
 	return true;
 }
 
 template<>
 bool VendorDetails<Vulkan::Util::VendorID::Nvidia>(
-	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
+	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
+	const vk::PhysicalDevice& PhysicalDevice)
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
 		vk::PhysicalDeviceProperties2,
@@ -105,29 +116,32 @@ bool VendorDetails<Vulkan::Util::VendorID::Nvidia>(
 			.value());
 
 	static const char* ASCII_ART[] = {
-		"\033[92m                     ########################   ",
-		"\033[92m               ######      ##################   ",
-		"\033[92m            ###      #####      #############   ",
-		"\033[92m         ####   #####    #####     ##########   ",
-		"\033[92m       ####   ####   #       ####   #########   ",
-		"\033[92m     ####   ####     ###     ####    ########   ",
-		"\033[92m      ####   ####    #########     ##########   ",
-		"\033[92m        ###    ###   #####      ####   ######   ",
-		"\033[92m         #####   ####       #####      ######   ",
-		"\033[92m           #####     ########       #########   ",
-		"\033[92m               ######          ##############   ",
-		"\033[92m                     ########################   ",
-		"\033[1;37m                   NVIDIA",
+		"                     ########################",
+		"               ######      ##################",
+		"            ###      #####      #############",
+		"         ####   #####    #####     ##########",
+		"       ####   ####   #       ####   #########",
+		"     ####   ####     ###     ####    ########",
+		"      ####   ####    #########     ##########",
+		"        ###    ###   #####      ####   ######",
+		"         #####   ####       #####      ######",
+		"           #####     ########       #########",
+		"               ######          ##############",
+		"                     ########################",
+		"                   NVIDIA",
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
 	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
+
+	Style[0] = "\033[92m";
 	return true;
 }
 
 template<>
 bool VendorDetails<Vulkan::Util::VendorID::AMD>(
-	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
+	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
+	const vk::PhysicalDevice& PhysicalDevice)
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
 		vk::PhysicalDeviceProperties2,
@@ -144,16 +158,19 @@ bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 						.value());
 
 	static const char* ASCII_ART[] = {
-		"\033[37m    ###     ###      ### #########  \033[2;32m  #########",
-		"\033[37m   #####    #####  ##### ###    ### \033[2;32m    #######",
-		"\033[37m  ### ###   ############ ###     ###\033[2;32m   #    ###",
-		"\033[37m ###   ###  ###  ##  ### ###     ###\033[2;32m  ##    ###",
-		"\033[37m########### ###      ### ###    ### \033[2;32m ####### ##",
-		"\033[37m###     ### ###      ### #########  \033[2;32m #####    #",
+		"    ###     ###      ### #########    $$$$$$$$$",
+		"   #####    #####  ##### ###    ###     $$$$$$$",
+		"  ### ###   ############ ###     ###   $    $$$",
+		" ###   ###  ###  ##  ### ###     ###  $$    $$$",
+		"########### ###      ### ###    ###  $$$$$$$ $$",
+		"###     ### ###      ### #########   $$$$$    $",
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
 	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
+
+	Style[0] = "\033[37m";
+	Style[1] = "\033[2;32m";
 	return true;
 }
 
@@ -191,8 +208,9 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	const vk::DeviceSize MemUsed
 		= MemTotal - MemoryBudgetProperties.heapBudget[VRAMHeapIndex];
 
-	FetchLog Fetch = {};
-	FetchArt Art   = {};
+	FetchLog   Fetch = {};
+	FetchArt   Art   = {};
+	FetchStyle Style = {nullptr, nullptr, nullptr, nullptr};
 
 	Fetch.push_back(
 		Format::FormatString(
@@ -258,38 +276,61 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	{
 	case Vulkan::Util::VendorID::AMD:
 	{
-		VendorDetails<Vulkan::Util::VendorID::AMD>(Art, Fetch, PhysicalDevice);
+		VendorDetails<Vulkan::Util::VendorID::AMD>(
+			Art, Style, Fetch, PhysicalDevice);
 		break;
 	}
 	case Vulkan::Util::VendorID::Nvidia:
 	{
 		VendorDetails<Vulkan::Util::VendorID::Nvidia>(
-			Art, Fetch, PhysicalDevice);
+			Art, Style, Fetch, PhysicalDevice);
 		break;
 	}
 	case Vulkan::Util::VendorID::Intel:
 	{
 		VendorDetails<Vulkan::Util::VendorID::Intel>(
-			Art, Fetch, PhysicalDevice);
+			Art, Style, Fetch, PhysicalDevice);
 		break;
 	}
 	default:
 	case Vulkan::Util::VendorID::Unknown:
 	{
 		VendorDetails<Vulkan::Util::VendorID::Unknown>(
-			Art, Fetch, PhysicalDevice);
+			Art, Style, Fetch, PhysicalDevice);
 		break;
 	}
+	}
+
+	std::size_t ArtWidth = 0;
+	for( const auto& Line : Art )
+	{
+		ArtWidth = std::max(ArtWidth, std::strlen(Line));
 	}
 
 	for( std::size_t CurLine = 0; CurLine < std::max(Art.size(), Fetch.size());
 		 ++CurLine )
 	{
 		std::string ArtLine(CurLine < Art.size() ? Art[CurLine] : "");
-		ArtLine = Format::ReplaceString(ArtLine, "#", "\033[7m \033[27m");
+		// Convert '#" to reverse-video blocks
+		if( Style[0] )
+			ArtLine = Format::ReplaceString(
+				ArtLine, "#",
+				Format::FormatString("%s\033[7m \033[0m", Style[0]).value());
+		if( Style[1] )
+			ArtLine = Format::ReplaceString(
+				ArtLine, "$",
+				Format::FormatString("%s\033[7m \033[0m", Style[1]).value());
+		if( Style[2] )
+			ArtLine = Format::ReplaceString(
+				ArtLine, "%",
+				Format::FormatString("%s\033[7m \033[0m", Style[2]).value());
+		if( Style[3] )
+			ArtLine = Format::ReplaceString(
+				ArtLine, "&",
+				Format::FormatString("%s\033[7m \033[0m", Style[3]).value());
 
 		std::printf(
-			" %-47s\033[0m %s\n", ArtLine.c_str(),
+			" %-*s\033[0m %s\n", ArtWidth, ArtLine.c_str(),
 			CurLine < Fetch.size() ? Fetch[CurLine].c_str() : "");
 	}
 	std::putchar('\n');
