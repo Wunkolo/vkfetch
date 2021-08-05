@@ -6,8 +6,8 @@
 #include <optional>
 #include <span>
 
-#define VULKAN_HPP_NO_EXCEPTIONS
-#include <vulkan/vulkan.hpp>
+#include <VulkanConfig.hpp>
+#include <VulkanUtil.hpp>
 
 #ifdef _WIN32
 #define NOMINMAX
@@ -108,49 +108,6 @@ std::optional<std::string>
 using FetchLog = std::vector<std::string>;
 using FetchArt = std::span<const char*>;
 
-enum class VendorID : std::uint32_t
-{
-	AMD      = 0x1002,
-	ImgTec   = 0x1010,
-	Nvidia   = 0x10DE,
-	ARM      = 0x13B5,
-	Qualcomm = 0x5143,
-	Intel    = 0x8086,
-	Unknown  = 0xFFFF
-};
-
-const char* VendorName(VendorID Vendor)
-{
-	switch( Vendor )
-	{
-	case VendorID::AMD:
-	{
-		return "AMD";
-	}
-	case VendorID::ImgTec:
-	{
-		return "ImgTec";
-	}
-	case VendorID::Nvidia:
-	{
-		return "Nvidia";
-	}
-	case VendorID::ARM:
-	{
-		return "ARM";
-	}
-	case VendorID::Qualcomm:
-	{
-		return "Qualcomm";
-	}
-	case VendorID::Intel:
-	{
-		return "Intel";
-	}
-	}
-	return "Unknown";
-}
-
 std::string FormatByteCount(std::size_t ByteCount)
 {
 	static std::array<const char*, 9> SizeUnits
@@ -172,22 +129,6 @@ std::string FormatByteCount(std::size_t ByteCount)
 	return std::string(Buffer.get(), Buffer.get() + Size - 1);
 }
 
-std::optional<std::uint32_t> FindVRAMHeapIndex(
-	const vk::PhysicalDeviceMemoryProperties& MemoryProperties)
-{
-	for( std::uint32_t Index = 0; Index < MemoryProperties.memoryHeapCount;
-		 ++Index )
-	{
-		if( (MemoryProperties.memoryHeaps[Index].flags
-			 & vk::MemoryHeapFlagBits::eDeviceLocal)
-			== vk::MemoryHeapFlagBits::eDeviceLocal )
-		{
-			return Index;
-		}
-	}
-	return std::nullopt;
-}
-
 std::string FormatVersion(std::uint32_t Version)
 {
 	const std::size_t Size
@@ -202,7 +143,7 @@ std::string FormatVersion(std::uint32_t Version)
 	return std::string(Buffer.get(), Buffer.get() + Size - 1);
 }
 
-template<VendorID Vendor>
+template<Vulkan::Util::VendorID Vendor>
 bool VendorDetails(
 	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
 {
@@ -210,7 +151,7 @@ bool VendorDetails(
 }
 
 template<>
-bool VendorDetails<VendorID::Unknown>(
+bool VendorDetails<Vulkan::Util::VendorID::Unknown>(
 	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
 {
 	static const char* ASCII_ART[] = {
@@ -235,7 +176,7 @@ bool VendorDetails<VendorID::Unknown>(
 }
 
 template<>
-bool VendorDetails<VendorID::Intel>(
+bool VendorDetails<Vulkan::Util::VendorID::Intel>(
 	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
 {
 	static const char* ASCII_ART[] = {
@@ -256,7 +197,7 @@ bool VendorDetails<VendorID::Intel>(
 }
 
 template<>
-bool VendorDetails<VendorID::Nvidia>(
+bool VendorDetails<Vulkan::Util::VendorID::Nvidia>(
 	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
@@ -299,7 +240,7 @@ bool VendorDetails<VendorID::Nvidia>(
 }
 
 template<>
-bool VendorDetails<VendorID::AMD>(
+bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 	FetchArt& Art, FetchLog& Fetch, const vk::PhysicalDevice& PhysicalDevice)
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
@@ -353,7 +294,8 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	/// Get device-local heap
 
 	const std::uint32_t VRAMHeapIndex
-		= FindVRAMHeapIndex(MemoryProperties.memoryProperties).value_or(0);
+		= Vulkan::Util::FindVRAMHeapIndex(MemoryProperties.memoryProperties)
+			  .value_or(0);
 
 	// The heap budget is how much the current process is allowed to allocate
 	// from the heap. We compare it to the total amount of memory available
@@ -377,8 +319,8 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		FormatString(
 			"    Device: %04x:%04x (%s)", DeviceProperties.properties.deviceID,
 			DeviceProperties.properties.vendorID,
-			VendorName(
-				static_cast<VendorID>(DeviceProperties.properties.vendorID)))
+			Vulkan::Util::VendorName(static_cast<Vulkan::Util::VendorID>(
+				DeviceProperties.properties.vendorID)))
 			.value());
 
 	Fetch.push_back(FormatString(
@@ -424,27 +366,31 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 						PressureColor, MemoryPressure * 100.0f)
 						.value());
 
-	switch( static_cast<VendorID>(DeviceProperties.properties.vendorID) )
+	switch( static_cast<Vulkan::Util::VendorID>(
+		DeviceProperties.properties.vendorID) )
 	{
-	case VendorID::AMD:
+	case Vulkan::Util::VendorID::AMD:
 	{
-		VendorDetails<VendorID::AMD>(Art, Fetch, PhysicalDevice);
+		VendorDetails<Vulkan::Util::VendorID::AMD>(Art, Fetch, PhysicalDevice);
 		break;
 	}
-	case VendorID::Nvidia:
+	case Vulkan::Util::VendorID::Nvidia:
 	{
-		VendorDetails<VendorID::Nvidia>(Art, Fetch, PhysicalDevice);
+		VendorDetails<Vulkan::Util::VendorID::Nvidia>(
+			Art, Fetch, PhysicalDevice);
 		break;
 	}
-	case VendorID::Intel:
+	case Vulkan::Util::VendorID::Intel:
 	{
-		VendorDetails<VendorID::Intel>(Art, Fetch, PhysicalDevice);
+		VendorDetails<Vulkan::Util::VendorID::Intel>(
+			Art, Fetch, PhysicalDevice);
 		break;
 	}
 	default:
-	case VendorID::Unknown:
+	case Vulkan::Util::VendorID::Unknown:
 	{
-		VendorDetails<VendorID::Unknown>(Art, Fetch, PhysicalDevice);
+		VendorDetails<Vulkan::Util::VendorID::Unknown>(
+			Art, Fetch, PhysicalDevice);
 		break;
 	}
 	}
