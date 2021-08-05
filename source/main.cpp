@@ -452,18 +452,11 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	}
 	}
 
-	std::size_t ArtWidth = 0;
-	for( const auto& Line : Art )
-	{
-		ArtWidth = std::max(ArtWidth, std::strlen(Line));
-	}
-
 	for( std::size_t CurLine = 0; CurLine < std::max(Art.size(), Fetch.size());
 		 ++CurLine )
 	{
 		std::printf(
-			" %-.*s\033[0m %s\n", int(ArtWidth),
-			CurLine < Art.size() ? Art[CurLine] : "",
+			" %-47s\033[0m %s\n", CurLine < Art.size() ? Art[CurLine] : "",
 			CurLine < Fetch.size() ? Fetch[CurLine].c_str() : "");
 	}
 	std::putchar('\n');
