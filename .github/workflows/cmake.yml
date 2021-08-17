@@ -60,7 +60,7 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: "windows"
-        path: "build/vkfetch.exe"
+        path: "build/${{env.BUILD_TYPE}}/vkfetch.exe"
 
   create-release:
     if: github.ref == 'refs/heads/main'
