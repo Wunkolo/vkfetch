@@ -357,6 +357,13 @@ int main()
 	{
 		Instance = std::move(CreateResult.value);
 	}
+	else
+	{
+		std::fprintf(
+			stderr, "Error creating vulkan instance: %s\n",
+			vk::to_string(CreateResult.result).c_str());
+		return EXIT_FAILURE;
+	}
 
 	if( const auto EnumResult = Instance->enumeratePhysicalDevices();
 		EnumResult.result == vk::Result::eSuccess )
