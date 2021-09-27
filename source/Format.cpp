@@ -62,10 +62,10 @@ std::string FormatByteCount(std::size_t ByteCount)
 		ByteSize /= 1_KiB;
 	}
 	const std::size_t Size
-		= std::snprintf(nullptr, 0, "%.2f %s", ByteSize, SizeUnits.at(Index))
+		= std::snprintf(nullptr, 0, "%.3f %s", ByteSize, SizeUnits.at(Index))
 		+ 1;
 	const auto Buffer = std::make_unique<char[]>(Size);
-	std::snprintf(Buffer.get(), Size, "%.2f %s", ByteSize, SizeUnits.at(Index));
+	std::snprintf(Buffer.get(), Size, "%.3f %s", ByteSize, SizeUnits.at(Index));
 	return std::string(Buffer.get(), Buffer.get() + Size - 1);
 }
 

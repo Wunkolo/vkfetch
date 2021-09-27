@@ -105,15 +105,10 @@ bool VendorDetails<Vulkan::Util::VendorID::Nvidia>(
 		= DevicePropertyChain
 			  .get<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>();
 
-	Fetch.push_back(Format::FormatString(
-						"    Streaming Multiprocessors: %u",
-						SMBuiltinsProperties.shaderSMCount)
-						.value());
-
-	Fetch.push_back(
-		Format::FormatString(
-			"    WarpsPerSM: %u", SMBuiltinsProperties.shaderWarpsPerSM)
-			.value());
+	// clang-format off
+	Fetch.push_back(Format::FormatString("    Streaming Multiprocessors:\033[37m %u", SMBuiltinsProperties.shaderSMCount).value());
+	Fetch.push_back(Format::FormatString("    Warps Per SM:\033[37m %u", SMBuiltinsProperties.shaderWarpsPerSM).value());
+	// clang-format on
 
 	static const char* ASCII_ART[] = {
 		"                     ########################",
@@ -240,21 +235,22 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 	Fetch.push_back(
 		Format::FormatString(
-			"    Device: %04x:%04x (%s)", DeviceProperties.properties.deviceID,
+			"    Device: \033[37m%04x\033[0m : \033[37m%04x\033[0m (%s)",
+			DeviceProperties.properties.deviceID,
 			DeviceProperties.properties.vendorID,
 			Vulkan::Util::VendorName(static_cast<Vulkan::Util::VendorID>(
 				DeviceProperties.properties.vendorID)))
 			.value());
 
 	Fetch.push_back(Format::FormatString(
-						"    Driver: %s : %s",
+						"    Driver: \033[37m%s\033[0m : \033[37m%s\033[0m",
 						DeviceDriverProperties.driverName.data(),
 						DeviceDriverProperties.driverInfo.data())
 						.value());
 
 	Fetch.push_back(
 		Format::FormatString(
-			"    API: %s",
+			"    API: \033[37m%s",
 			Format::FormatVersion(DeviceProperties.properties.apiVersion)
 				.c_str())
 			.value());
