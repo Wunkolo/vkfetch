@@ -145,17 +145,36 @@ bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
 		vk::PhysicalDeviceProperties2,
-		vk::PhysicalDeviceShaderCorePropertiesAMD>();
+		vk::PhysicalDeviceShaderCorePropertiesAMD,
+		vk::PhysicalDeviceShaderCoreProperties2AMD>();
 
 	const auto ShaderCoreProperties
 		= DevicePropertyChain.get<vk::PhysicalDeviceShaderCorePropertiesAMD>();
 
+	const auto ShaderCoreProperties2
+		= DevicePropertyChain.get<vk::PhysicalDeviceShaderCoreProperties2AMD>();
+
+	const auto ActiveComputeUnits
+		= ShaderCoreProperties2.activeComputeUnitCount;
+
+	const auto TotalComputeUnits
+		= ShaderCoreProperties.shaderEngineCount
+		* ShaderCoreProperties.shaderArraysPerEngineCount
+		* ShaderCoreProperties.computeUnitsPerShaderArray;
+
 	Fetch.push_back(Format::FormatString(
-						"    Compute Units: %u",
-						ShaderCoreProperties.shaderEngineCount
-							* ShaderCoreProperties.shaderArraysPerEngineCount
-							* ShaderCoreProperties.computeUnitsPerShaderArray)
+						"    Compute Units:\033[37m %u\033[0m / %u",
+						ActiveComputeUnits, TotalComputeUnits)
 						.value());
+
+	// clang-format off
+	Fetch.push_back(Format::FormatString("    ShaderEngines:\033[37m %u", ShaderCoreProperties.shaderEngineCount).value());
+	Fetch.push_back(Format::FormatString("    ShaderArraysPerEngineCount:\033[37m %u", ShaderCoreProperties.shaderArraysPerEngineCount).value());
+	Fetch.push_back(Format::FormatString("    ComputeUnitsPerShaderArray:\033[37m %u", ShaderCoreProperties.computeUnitsPerShaderArray).value());
+	Fetch.push_back(Format::FormatString("    SimdPerComputeUnit:\033[37m %u", ShaderCoreProperties.simdPerComputeUnit).value());
+	Fetch.push_back(Format::FormatString("    WavefrontsPerSimd:\033[37m %u", ShaderCoreProperties.wavefrontsPerSimd).value());
+	Fetch.push_back(Format::FormatString("    WavefrontSize:\033[37m %u", ShaderCoreProperties.wavefrontSize).value());
+	// clang-format on
 
 	static const char* ASCII_ART[] = {
 		"    ###     ###      ### #########    $$$$$$$$$",
