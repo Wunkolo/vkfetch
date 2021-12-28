@@ -35,20 +35,4 @@ const char* VendorName(VendorID Vendor)
 	return "Unknown";
 }
 
-std::optional<std::uint32_t> FindVRAMHeapIndex(
-	const vk::PhysicalDeviceMemoryProperties& MemoryProperties)
-{
-	for( std::uint32_t Index = 0; Index < MemoryProperties.memoryHeapCount;
-		 ++Index )
-	{
-		if( (MemoryProperties.memoryHeaps[Index].flags
-			 & vk::MemoryHeapFlagBits::eDeviceLocal)
-			== vk::MemoryHeapFlagBits::eDeviceLocal )
-		{
-			return Index;
-		}
-	}
-	return std::nullopt;
-}
-
 }

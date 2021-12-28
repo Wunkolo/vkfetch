@@ -21,7 +21,4 @@ enum class VendorID : std::uint32_t
 
 const char* VendorName(VendorID Vendor);
 
-std::optional<std::uint32_t> FindVRAMHeapIndex(
-	const vk::PhysicalDeviceMemoryProperties& MemoryProperties);
-
 } // namespace Vulkan::Util
