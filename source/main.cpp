@@ -245,12 +245,18 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		 HeapIndex < MemoryProperties.memoryProperties.memoryHeapCount;
 		 ++HeapIndex )
 	{
+		const auto CurHeapProperties
+			= MemoryProperties.memoryProperties.memoryHeaps[HeapIndex];
+
+		Fetch.push_back(Format::FormatString(
+							"    Heap %2u: %s", HeapIndex,
+							vk::to_string(CurHeapProperties.flags).c_str())
+							.value());
 
 		// The heap budget is how much the current process is allowed to
 		// allocate from the heap. We compare it to the total amount of memory
 		// available to determine how much "usable" free memory there is left
-		const vk::DeviceSize MemTotal
-			= MemoryProperties.memoryProperties.memoryHeaps[HeapIndex].size;
+		const vk::DeviceSize MemTotal = CurHeapProperties.size;
 		const vk::DeviceSize MemUsed
 			= MemTotal - MemoryBudgetProperties.heapBudget[HeapIndex];
 
@@ -275,15 +281,14 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		}
 
 		Fetch.push_back(Format::FormatString(
-							"    Heap %2u: %s%s\033[0m / %s", HeapIndex,
-							PressureColor,
+							"     - %s%s\033[0m / %s", PressureColor,
 							Format::FormatByteCount(MemUsed).c_str(),
 							Format::FormatByteCount(MemTotal).c_str())
 							.value());
 
 		Fetch.push_back(
 			Format::FormatString(
-				"    %s %%%s% 3.2f\033[0m",
+				"     - %s %%%s% 3.2f\033[0m",
 				Format::FormatMeter(30, MemoryPressure).value().c_str(),
 				PressureColor, MemoryPressure * 100.0f)
 				.value());
