@@ -11,6 +11,10 @@ const char* VendorName(VendorID Vendor)
 	{
 		return "AMD";
 	}
+	case VendorID::Apple:
+	{
+		return "Apple";
+	}
 	case VendorID::ImgTec:
 	{
 		return "ImgTec";
@@ -31,8 +35,12 @@ const char* VendorName(VendorID Vendor)
 	{
 		return "Intel";
 	}
+	default:
+	case VendorID::Unknown:
+	{
+		return "Unknown";
 	}
-	return "Unknown";
+	}
 }
 
 std::optional<std::uint32_t> FindVRAMHeapIndex(
