@@ -46,7 +46,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Unknown>(
 	const vk::PhysicalDevice& PhysicalDevice
 )
 {
-	static const char* ASCII_ART[] = {
+	static std::array ASCII_ART = std::to_array<const char*>({
 		// clang-format off
 		"       ################                    ",
 		"   ##########################              ",
@@ -62,10 +62,9 @@ bool VendorDetails<Vulkan::Util::VendorID::Unknown>(
 		"               ########                    ",
 		"                ######                     ",
 		// clang-format on
-	};
-	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
+	});
 
-	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
+	Art = ASCII_ART;
 
 	Style[0] = "\033[2;31m";
 	return true;
@@ -77,7 +76,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Apple>(
 	const vk::PhysicalDevice& PhysicalDevice
 )
 {
-	static const char* ASCII_ART[] = {
+	static std::array ASCII_ART = std::to_array<const char*>({
 		// clang-format off
 		"                   ####         ",
 		"                 ######         ",
@@ -96,10 +95,9 @@ bool VendorDetails<Vulkan::Util::VendorID::Apple>(
 		"      #####################     ",
 		"        ######      #####       ",
 		// clang-format on
-	};
-	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
+	});
 
-	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
+	Art = ASCII_ART;
 
 	Style[0] = "\033[2;47m";
 	return true;
@@ -111,7 +109,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Intel>(
 	const vk::PhysicalDevice& PhysicalDevice
 )
 {
-	static const char* ASCII_ART[] = {
+	static std::array ASCII_ART = std::to_array<const char*>({
 		// clang-format off
 		"$$$                                  ###",
 		"$$$                                  ###",
@@ -123,10 +121,9 @@ bool VendorDetails<Vulkan::Util::VendorID::Intel>(
 		"###   ###    ###  ###     ########   ###",
 		"###   ###    ###   #####    ####     ###",
 		// clang-format on
-	};
-	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
+	});
 
-	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
+	Art = ASCII_ART;
 
 	Style[0] = "\033[37m";
 	Style[1] = "\033[36m";
@@ -152,7 +149,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Nvidia>(
 	Fetch.push_back(Format::FormatString("    Warps Per SM:\033[37m %u", SMBuiltinsProperties.shaderWarpsPerSM).value());
 	// clang-format on
 
-	static const char* ASCII_ART[] = {
+	static std::array ASCII_ART = std::to_array<const char*>({
 		// clang-format off
 		"                     ########################",
 		"               ######      ##################",
@@ -168,10 +165,9 @@ bool VendorDetails<Vulkan::Util::VendorID::Nvidia>(
 		"                     ########################",
 		"                   NVIDIA",
 		// clang-format on
-	};
-	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
+	});
 
-	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
+	Art = ASCII_ART;
 
 	Style[0] = "\033[92m";
 	return true;
@@ -217,7 +213,7 @@ bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 	Fetch.push_back(Format::FormatString("    WavefrontSize:\033[37m %u", ShaderCoreProperties.wavefrontSize).value());
 	// clang-format on
 
-	static const char* ASCII_ART[] = {
+	static std::array ASCII_ART = std::to_array<const char*>({
 		// clang-format off
 		"    ###     ###      ### #########    $$$$$$$$$",
 		"   #####    #####  ##### ###    ###     $$$$$$$",
@@ -226,10 +222,9 @@ bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 		"########### ###      ### ###    ###  $$$$$$$ $$",
 		"###     ### ###      ### #########   $$$$$    $",
 		// clang-format on
-	};
-	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
+	});
 
-	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
+	Art = ASCII_ART;
 
 	Style[0] = "\033[37m";
 	Style[1] = "\033[2;32m";
