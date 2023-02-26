@@ -34,7 +34,8 @@ using FetchStyle = std::array<const char*, 4>;
 template<Vulkan::Util::VendorID Vendor>
 bool VendorDetails(
 	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
-	const vk::PhysicalDevice& PhysicalDevice)
+	const vk::PhysicalDevice& PhysicalDevice
+)
 {
 	return true;
 }
@@ -42,9 +43,11 @@ bool VendorDetails(
 template<>
 bool VendorDetails<Vulkan::Util::VendorID::Unknown>(
 	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
-	const vk::PhysicalDevice& PhysicalDevice)
+	const vk::PhysicalDevice& PhysicalDevice
+)
 {
 	static const char* ASCII_ART[] = {
+		// clang-format off
 		"       ################                    ",
 		"   ##########################              ",
 		" #############         ##########          ",
@@ -58,6 +61,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Unknown>(
 		"               ########                    ",
 		"               ########                    ",
 		"                ######                     ",
+		// clang-format on
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
@@ -68,11 +72,47 @@ bool VendorDetails<Vulkan::Util::VendorID::Unknown>(
 }
 
 template<>
-bool VendorDetails<Vulkan::Util::VendorID::Intel>(
+bool VendorDetails<Vulkan::Util::VendorID::Apple>(
 	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
-	const vk::PhysicalDevice& PhysicalDevice)
+	const vk::PhysicalDevice& PhysicalDevice
+)
 {
 	static const char* ASCII_ART[] = {
+		// clang-format off
+		"                   ####         ",
+		"                 ######         ",
+		"                #####           ",
+		"       ####### #### ########    ",
+		"    ##########################  ",
+		"   ##########################   ",
+		"  #########################     ",
+		" #########################      ",
+		" #########################      ",
+		"  #########################     ",
+		"  ###########################   ",
+		"   ############################ ",
+		"    ##########################  ",
+		"     ########################   ",
+		"      #####################     ",
+		"        ######      #####       ",
+		// clang-format on
+	};
+	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
+
+	Art = FetchArt(ASCII_ART, ASCII_HEIGHT);
+
+	Style[0] = "\033[2;47m";
+	return true;
+}
+
+template<>
+bool VendorDetails<Vulkan::Util::VendorID::Intel>(
+	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
+	const vk::PhysicalDevice& PhysicalDevice
+)
+{
+	static const char* ASCII_ART[] = {
+		// clang-format off
 		"$$$                                  ###",
 		"$$$                                  ###",
 		"      ## ####     ###      ######    ###",
@@ -82,6 +122,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Intel>(
 		"###   ###    ###  ###    ###         ###",
 		"###   ###    ###  ###     ########   ###",
 		"###   ###    ###   #####    ####     ###",
+		// clang-format on
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
@@ -95,7 +136,8 @@ bool VendorDetails<Vulkan::Util::VendorID::Intel>(
 template<>
 bool VendorDetails<Vulkan::Util::VendorID::Nvidia>(
 	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
-	const vk::PhysicalDevice& PhysicalDevice)
+	const vk::PhysicalDevice& PhysicalDevice
+)
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
 		vk::PhysicalDeviceProperties2,
@@ -111,6 +153,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Nvidia>(
 	// clang-format on
 
 	static const char* ASCII_ART[] = {
+		// clang-format off
 		"                     ########################",
 		"               ######      ##################",
 		"            ###      #####      #############",
@@ -124,6 +167,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Nvidia>(
 		"               ######          ##############",
 		"                     ########################",
 		"                   NVIDIA",
+		// clang-format on
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
@@ -136,7 +180,8 @@ bool VendorDetails<Vulkan::Util::VendorID::Nvidia>(
 template<>
 bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
-	const vk::PhysicalDevice& PhysicalDevice)
+	const vk::PhysicalDevice& PhysicalDevice
+)
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
 		vk::PhysicalDeviceProperties2,
@@ -159,7 +204,8 @@ bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 
 	Fetch.push_back(Format::FormatString(
 						"    Compute Units:\033[37m %u\033[0m / %u",
-						ActiveComputeUnits, TotalComputeUnits)
+						ActiveComputeUnits, TotalComputeUnits
+	)
 						.value());
 
 	// clang-format off
@@ -172,12 +218,14 @@ bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 	// clang-format on
 
 	static const char* ASCII_ART[] = {
+		// clang-format off
 		"    ###     ###      ### #########    $$$$$$$$$",
 		"   #####    #####  ##### ###    ###     $$$$$$$",
 		"  ### ###   ############ ###     ###   $    $$$",
 		" ###   ###  ###  ##  ### ###     ###  $$    $$$",
 		"########### ###      ### ###    ###  $$$$$$$ $$",
 		"###     ### ###      ### #########   $$$$$    $",
+		// clang-format on
 	};
 	const std::size_t ASCII_HEIGHT = std::extent_v<decltype(ASCII_ART)>;
 
@@ -205,8 +253,8 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		= MemoryPropertyChain.get<vk::PhysicalDeviceMemoryProperties2>();
 
 	const auto& MemoryBudgetProperties
-		= MemoryPropertyChain
-			  .get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
+		= MemoryPropertyChain.get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>(
+		);
 
 	/// Get device-local heap
 
@@ -230,8 +278,10 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		Format::FormatString(
 			"\033[1m%s\033[0m : %s",
 			DeviceProperties.properties.deviceName.data(),
-			vk::to_string(DeviceProperties.properties.deviceType).c_str())
-			.value());
+			vk::to_string(DeviceProperties.properties.deviceType).c_str()
+		)
+			.value()
+	);
 
 	Fetch.push_back(
 		Format::FormatString(
@@ -239,21 +289,27 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 			DeviceProperties.properties.deviceID,
 			DeviceProperties.properties.vendorID,
 			Vulkan::Util::VendorName(static_cast<Vulkan::Util::VendorID>(
-				DeviceProperties.properties.vendorID)))
-			.value());
+				DeviceProperties.properties.vendorID
+			))
+		)
+			.value()
+	);
 
 	Fetch.push_back(Format::FormatString(
 						"    Driver: \033[37m%s\033[0m : \033[37m%s\033[0m",
 						DeviceDriverProperties.driverName.data(),
-						DeviceDriverProperties.driverInfo.data())
+						DeviceDriverProperties.driverInfo.data()
+	)
 						.value());
 
 	Fetch.push_back(
 		Format::FormatString(
 			"    API: \033[37m%s",
 			Format::FormatVersion(DeviceProperties.properties.apiVersion)
-				.c_str())
-			.value());
+				.c_str()
+		)
+			.value()
+	);
 
 	const std::float_t MemoryPressure
 		= MemUsed / static_cast<std::float_t>(MemTotal);
@@ -277,41 +333,55 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	Fetch.push_back(Format::FormatString(
 						"    VRAM: %s%s\033[0m / %s", PressureColor,
 						Format::FormatByteCount(MemUsed).c_str(),
-						Format::FormatByteCount(MemTotal).c_str())
+						Format::FormatByteCount(MemTotal).c_str()
+	)
 						.value());
 
 	Fetch.push_back(Format::FormatString(
 						"    %s %%%s% 3.2f\033[0m",
 						Format::FormatMeter(30, MemoryPressure).value().c_str(),
-						PressureColor, MemoryPressure * 100.0f)
+						PressureColor, MemoryPressure * 100.0f
+	)
 						.value());
 
 	switch( static_cast<Vulkan::Util::VendorID>(
-		DeviceProperties.properties.vendorID) )
+		DeviceProperties.properties.vendorID
+	) )
 	{
 	case Vulkan::Util::VendorID::AMD:
 	{
 		VendorDetails<Vulkan::Util::VendorID::AMD>(
-			Art, Style, Fetch, PhysicalDevice);
+			Art, Style, Fetch, PhysicalDevice
+		);
+		break;
+	}
+	case Vulkan::Util::VendorID::Apple:
+	{
+		VendorDetails<Vulkan::Util::VendorID::Apple>(
+			Art, Style, Fetch, PhysicalDevice
+		);
 		break;
 	}
 	case Vulkan::Util::VendorID::Nvidia:
 	{
 		VendorDetails<Vulkan::Util::VendorID::Nvidia>(
-			Art, Style, Fetch, PhysicalDevice);
+			Art, Style, Fetch, PhysicalDevice
+		);
 		break;
 	}
 	case Vulkan::Util::VendorID::Intel:
 	{
 		VendorDetails<Vulkan::Util::VendorID::Intel>(
-			Art, Style, Fetch, PhysicalDevice);
+			Art, Style, Fetch, PhysicalDevice
+		);
 		break;
 	}
 	default:
 	case Vulkan::Util::VendorID::Unknown:
 	{
 		VendorDetails<Vulkan::Util::VendorID::Unknown>(
-			Art, Style, Fetch, PhysicalDevice);
+			Art, Style, Fetch, PhysicalDevice
+		);
 		break;
 	}
 	}
@@ -330,23 +400,28 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		if( Style[0] )
 			ArtLine = Format::ReplaceString(
 				ArtLine, "#",
-				Format::FormatString("%s\033[7m \033[0m", Style[0]).value());
+				Format::FormatString("%s\033[7m \033[0m", Style[0]).value()
+			);
 		if( Style[1] )
 			ArtLine = Format::ReplaceString(
 				ArtLine, "$",
-				Format::FormatString("%s\033[7m \033[0m", Style[1]).value());
+				Format::FormatString("%s\033[7m \033[0m", Style[1]).value()
+			);
 		if( Style[2] )
 			ArtLine = Format::ReplaceString(
 				ArtLine, "%",
-				Format::FormatString("%s\033[7m \033[0m", Style[2]).value());
+				Format::FormatString("%s\033[7m \033[0m", Style[2]).value()
+			);
 		if( Style[3] )
 			ArtLine = Format::ReplaceString(
 				ArtLine, "&",
-				Format::FormatString("%s\033[7m \033[0m", Style[3]).value());
+				Format::FormatString("%s\033[7m \033[0m", Style[3]).value()
+			);
 
 		std::printf(
 			" %-*s\033[0m %s\n", ArtWidth, ArtLine.c_str(),
-			CurLine < Fetch.size() ? Fetch[CurLine].c_str() : "");
+			CurLine < Fetch.size() ? Fetch[CurLine].c_str() : ""
+		);
 	}
 	std::putchar('\n');
 
@@ -357,6 +432,18 @@ int main()
 {
 
 	vk::InstanceCreateInfo InstanceInfo = {};
+
+	static const std::array InstanceExtensions = std::to_array<const char*>({
+#if defined(__APPLE__)
+		VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
+#endif
+	});
+	InstanceInfo.enabledExtensionCount   = InstanceExtensions.size();
+	InstanceInfo.ppEnabledExtensionNames = InstanceExtensions.data();
+
+#if defined(__APPLE__)
+	InstanceInfo.flags |= vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR;
+#endif
 
 	vk::ApplicationInfo ApplicationInfo = {};
 	ApplicationInfo.apiVersion          = VK_API_VERSION_1_2;
@@ -376,7 +463,8 @@ int main()
 	{
 		std::fprintf(
 			stderr, "Error creating vulkan instance: %s\n",
-			vk::to_string(CreateResult.result).c_str());
+			vk::to_string(CreateResult.result).c_str()
+		);
 		return EXIT_FAILURE;
 	}
 

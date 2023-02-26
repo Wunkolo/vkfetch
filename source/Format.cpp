@@ -74,17 +74,20 @@ std::string FormatVersion(std::uint32_t Version)
 	const std::size_t Size
 		= std::snprintf(
 			  nullptr, 0, "%u.%u.%u", VK_VERSION_MAJOR(Version),
-			  VK_VERSION_MINOR(Version), VK_VERSION_PATCH(Version))
+			  VK_VERSION_MINOR(Version), VK_VERSION_PATCH(Version)
+		  )
 		+ 1;
 	const auto Buffer = std::make_unique<char[]>(Size);
 	std::snprintf(
 		Buffer.get(), Size, "%u.%u.%u", VK_VERSION_MAJOR(Version),
-		VK_VERSION_MINOR(Version), VK_VERSION_PATCH(Version));
+		VK_VERSION_MINOR(Version), VK_VERSION_PATCH(Version)
+	);
 	return std::string(Buffer.get(), Buffer.get() + Size - 1);
 }
 
 std::string ReplaceString(
-	std::string Subject, const std::string& Search, const std::string& Replace)
+	std::string Subject, const std::string& Search, const std::string& Replace
+)
 {
 	size_t Position = 0;
 	while( (Position = Subject.find(Search, Position)) != std::string::npos )
@@ -95,4 +98,4 @@ std::string ReplaceString(
 	return Subject;
 }
 
-}
+} // namespace Format
