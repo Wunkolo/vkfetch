@@ -27,6 +27,10 @@ const char* VendorName(VendorID Vendor)
 	{
 		return "ARM";
 	}
+	case VendorID::Google:
+	{
+		return "Google";
+	}
 	case VendorID::Qualcomm:
 	{
 		return "Qualcomm";

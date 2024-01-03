@@ -15,6 +15,7 @@ enum class VendorID : std::uint32_t
 	Apple    = 0x106B,
 	Nvidia   = 0x10DE,
 	ARM      = 0x13B5,
+	Google   = 0x1AE0,
 	Qualcomm = 0x5143,
 	Intel    = 0x8086,
 	Unknown  = 0xFFFF
