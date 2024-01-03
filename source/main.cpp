@@ -428,16 +428,11 @@ int main()
 	vk::InstanceCreateInfo InstanceInfo = {};
 
 	static const std::array InstanceExtensions = std::to_array<const char*>({
-#if defined(__APPLE__)
 		VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
-#endif
 	});
-	InstanceInfo.enabledExtensionCount   = InstanceExtensions.size();
-	InstanceInfo.ppEnabledExtensionNames = InstanceExtensions.data();
+	InstanceInfo.setPEnabledExtensionNames(InstanceExtensions);
 
-#if defined(__APPLE__)
 	InstanceInfo.flags |= vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR;
-#endif
 
 	vk::ApplicationInfo ApplicationInfo = {};
 	ApplicationInfo.apiVersion          = VK_API_VERSION_1_2;
