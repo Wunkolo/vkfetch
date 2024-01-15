@@ -2,6 +2,8 @@
 
 #include <VulkanConfig.hpp>
 
+#include <fmt/core.h>
+
 namespace Format
 {
 
@@ -50,7 +52,7 @@ std::optional<std::string>
 
 std::string FormatByteCount(std::size_t ByteCount)
 {
-	static std::array<const char*, 9> SizeUnits
+	static const std::array<const char*, 9> SizeUnits
 		= {{"Bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}};
 
 	std::size_t Index;
@@ -61,28 +63,16 @@ std::string FormatByteCount(std::size_t ByteCount)
 			break;
 		ByteSize /= 1_KiB;
 	}
-	const std::size_t Size
-		= std::snprintf(nullptr, 0, "%.3f %s", ByteSize, SizeUnits.at(Index))
-		+ 1;
-	const auto Buffer = std::make_unique<char[]>(Size);
-	std::snprintf(Buffer.get(), Size, "%.3f %s", ByteSize, SizeUnits.at(Index));
-	return std::string(Buffer.get(), Buffer.get() + Size - 1);
+
+	return fmt::format("{:.3f} {}", ByteSize, SizeUnits.at(Index));
 }
 
 std::string FormatVersion(std::uint32_t Version)
 {
-	const std::size_t Size
-		= std::snprintf(
-			  nullptr, 0, "%u.%u.%u", VK_VERSION_MAJOR(Version),
-			  VK_VERSION_MINOR(Version), VK_VERSION_PATCH(Version)
-		  )
-		+ 1;
-	const auto Buffer = std::make_unique<char[]>(Size);
-	std::snprintf(
-		Buffer.get(), Size, "%u.%u.%u", VK_VERSION_MAJOR(Version),
-		VK_VERSION_MINOR(Version), VK_VERSION_PATCH(Version)
+	return fmt::format(
+		"{}.{}.{}", VK_VERSION_MAJOR(Version), VK_VERSION_MINOR(Version),
+		VK_VERSION_PATCH(Version)
 	);
-	return std::string(Buffer.get(), Buffer.get() + Size - 1);
 }
 
 std::string ReplaceString(
