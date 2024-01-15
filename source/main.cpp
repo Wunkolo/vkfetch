@@ -312,7 +312,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	));
 
 	Fetch.push_back(fmt::format(
-		"    Device: \033[37m{}4x\033[0m : \033[37m{}4x\033[0m ({})",
+		"    Device: \033[37m{:04x}\033[0m : \033[37m{:04x}\033[0m ({})",
 		DeviceProperties.properties.deviceID,
 		DeviceProperties.properties.vendorID,
 		Vulkan::Util::VendorName(static_cast<Vulkan::Util::VendorID>(
