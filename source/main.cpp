@@ -476,9 +476,9 @@ int main()
 	}
 	else
 	{
-		std::fprintf(
+		fmt::println(
 			stderr, "Error creating vulkan instance: {}\n",
-			vk::to_string(CreateResult.result).c_str()
+			vk::to_string(CreateResult.result)
 		);
 		return EXIT_FAILURE;
 	}
