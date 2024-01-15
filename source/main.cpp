@@ -398,7 +398,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 	Fetch.push_back(fmt::format(
 		"    VRAM: {}{}\033[0m / {}", PressureColor,
-		Format::FormatByteCount(MemUsed.value()),
+		MemUsed.has_value() ? Format::FormatByteCount(MemUsed.value()) : "???",
 		Format::FormatByteCount(MemTotal)
 	));
 
