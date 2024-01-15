@@ -308,7 +308,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 	Fetch.push_back(fmt::format(
 		"\033[1m{}\033[0m : {}", DeviceProperties.properties.deviceName.data(),
-		vk::to_string(DeviceProperties.properties.deviceType).c_str()
+		vk::to_string(DeviceProperties.properties.deviceType)
 	));
 
 	Fetch.push_back(fmt::format(
@@ -328,7 +328,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 	Fetch.push_back(fmt::format(
 		"    API: \033[37m{}",
-		Format::FormatVersion(DeviceProperties.properties.apiVersion).c_str()
+		Format::FormatVersion(DeviceProperties.properties.apiVersion)
 	));
 
 	const std::float_t MemoryPressure
@@ -352,13 +352,12 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 	Fetch.push_back(fmt::format(
 		"    VRAM: {}{}\033[0m / {}", PressureColor,
-		Format::FormatByteCount(MemUsed).c_str(),
-		Format::FormatByteCount(MemTotal).c_str()
+		Format::FormatByteCount(MemUsed), Format::FormatByteCount(MemTotal)
 	));
 
 	Fetch.push_back(fmt::format(
 		"    {} %%{}% 3.2f\033[0m",
-		Format::FormatMeter(30, MemoryPressure).value().c_str(), PressureColor,
+		Format::FormatMeter(30, MemoryPressure).value(), PressureColor,
 		MemoryPressure * 100.0f
 	));
 
@@ -441,7 +440,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 		fmt::println(
 			" {:<{}}\033[0m {}", ArtLine, ArtWidth,
-			CurLine < Fetch.size() ? Fetch[CurLine].c_str() : ""
+			CurLine < Fetch.size() ? Fetch[CurLine] : ""
 		);
 	}
 	std::putchar('\n');
