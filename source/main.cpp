@@ -6,6 +6,8 @@
 #include <optional>
 #include <span>
 
+#include <fmt/core.h>
+
 #include <VulkanConfig.hpp>
 #include <VulkanUtil.hpp>
 
