@@ -12,7 +12,7 @@ using namespace Literals;
 std::optional<std::string>
 	FormatMeter(const std::size_t Width, const std::float_t Completion)
 {
-	if( !Width || Width < 3 || Completion < 0.0f || !std::isfinite(Completion) )
+	if( !Width || Width < 3 || Completion < 0.0f )
 	{
 		return std::nullopt;
 	}
@@ -24,7 +24,11 @@ std::optional<std::string>
 	{
 		const std::float_t BarPhase
 			= Index / static_cast<std::float_t>(Width - 3);
-		if( BarPhase <= Completion )
+		if( !std::isfinite(Completion) )
+		{
+			Result += "\033[90m?";
+		}
+		else if( BarPhase <= Completion )
 		{
 			if( BarPhase < 0.5f )
 			{
