@@ -356,7 +356,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	));
 
 	Fetch.push_back(fmt::format(
-		"    {} %%{}% 3.2f\033[0m",
+		"    {} %{} 3.2f\033[0m",
 		Format::FormatMeter(30, MemoryPressure).value(), PressureColor,
 		MemoryPressure * 100.0f
 	));
