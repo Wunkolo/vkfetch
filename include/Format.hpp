@@ -39,21 +39,6 @@ constexpr std::size_t operator""_PiB(unsigned long long int Size)
 
 } // namespace Literals
 
-template<typename... Args>
-std::optional<std::string>
-	FormatString(const std::string& Format, Args... Arguments)
-{
-	const std::size_t Size
-		= std::snprintf(nullptr, 0, Format.c_str(), Arguments...) + 1;
-	if( Size <= 0 )
-	{
-		return std::nullopt;
-	}
-	const auto Buffer = std::make_unique<char[]>(Size);
-	std::snprintf(Buffer.get(), Size, Format.c_str(), Arguments...);
-	return std::string(Buffer.get(), Buffer.get() + Size - 1);
-}
-
 std::optional<std::string>
 	FormatMeter(const std::size_t Width, const std::float_t Completion);
 
