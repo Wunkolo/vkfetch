@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <limits>
 #include <optional>
 #include <span>
 
@@ -268,6 +269,52 @@ bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 	return true;
 }
 
+// Requires `VK_EXT_memory_budget`
+std::optional<std::float_t> GetHeapMemoryUsed(
+	vk::PhysicalDevice PhysicalDevice, std::uint32_t HeapIndex
+)
+{
+	if( const auto EnumerateResult
+		= PhysicalDevice.enumerateDeviceLayerProperties();
+		EnumerateResult.result == vk::Result::eSuccess )
+	{
+		for( const auto& LayerProperties : EnumerateResult.value )
+		{
+			if( std::strcmp(
+					LayerProperties.layerName,
+					VK_EXT_MEMORY_BUDGET_EXTENSION_NAME
+				)
+				== 0 )
+			{
+				// VK_EXT_memory_budget found
+				break;
+			}
+		}
+		// VK_EXT_memory_budget not available
+		return {};
+	}
+	else
+	{
+		// Error enumerating device layer properties
+		return {};
+	}
+
+	const auto MemoryPropertyChain = PhysicalDevice.getMemoryProperties2<
+		vk::PhysicalDeviceMemoryProperties2,
+		vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
+
+	const vk::PhysicalDeviceMemoryBudgetPropertiesEXT& MemoryBudgetProperties
+		= MemoryPropertyChain.get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>(
+		);
+
+	// The heap budget is how much the current process is allowed to allocate
+	// from the heap. We compare it to the total amount of memory available
+	// to determine how much "usable" free memory there is left
+	const vk::DeviceSize MemUsed = MemoryBudgetProperties.heapBudget[HeapIndex];
+
+	return MemoryBudgetProperties.heapBudget[HeapIndex];
+}
+
 bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 {
 	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
@@ -277,30 +324,6 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		= DevicePropertyChain.get<vk::PhysicalDeviceProperties2>();
 	const auto& DeviceDriverProperties
 		= DevicePropertyChain.get<vk::PhysicalDeviceDriverProperties>();
-
-	const auto MemoryPropertyChain = PhysicalDevice.getMemoryProperties2<
-		vk::PhysicalDeviceMemoryProperties2,
-		vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
-	const auto& MemoryProperties
-		= MemoryPropertyChain.get<vk::PhysicalDeviceMemoryProperties2>();
-
-	const auto& MemoryBudgetProperties
-		= MemoryPropertyChain.get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>(
-		);
-
-	/// Get device-local heap
-
-	const std::uint32_t VRAMHeapIndex
-		= Vulkan::Util::FindVRAMHeapIndex(MemoryProperties.memoryProperties)
-			  .value_or(0);
-
-	// The heap budget is how much the current process is allowed to allocate
-	// from the heap. We compare it to the total amount of memory available
-	// to determine how much "usable" free memory there is left
-	const vk::DeviceSize MemTotal
-		= MemoryProperties.memoryProperties.memoryHeaps[VRAMHeapIndex].size;
-	const vk::DeviceSize MemUsed
-		= MemTotal - MemoryBudgetProperties.heapBudget[VRAMHeapIndex];
 
 	FetchLog   Fetch = {};
 	FetchArt   Art   = {};
@@ -331,28 +354,52 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		Format::FormatVersion(DeviceProperties.properties.apiVersion)
 	));
 
-	const std::float_t MemoryPressure
-		= MemUsed / static_cast<std::float_t>(MemTotal);
+	/// Get the device-local heap that most-indicates the available VRAM
+	const auto&         MemoryProperties = PhysicalDevice.getMemoryProperties();
+	const std::uint32_t VRAMHeapIndex
+		= Vulkan::Util::FindVRAMHeapIndex(MemoryProperties).value_or(0);
+
+	const vk::DeviceSize MemTotal
+		= PhysicalDevice.getMemoryProperties().memoryHeaps[VRAMHeapIndex].size;
+
+	std::float_t MemoryPressure
+		= std::numeric_limits<std::float_t>::quiet_NaN();
+
+	const auto& MemUsed = GetHeapMemoryUsed(PhysicalDevice, VRAMHeapIndex);
+	if( MemUsed.has_value() )
+	{
+		MemoryPressure = (MemTotal - MemUsed.value())
+					   / static_cast<std::float_t>(MemTotal);
+	}
 
 	static const char* PressureColors[] = {"\033[92m", "\033[93m", "\033[91m"};
 
 	const char* PressureColor;
-	if( MemoryPressure < 0.5f )
+	if( std::isfinite(MemoryPressure) )
 	{
-		PressureColor = PressureColors[0];
-	}
-	else if( MemoryPressure < 0.75f )
-	{
-		PressureColor = PressureColors[1];
+
+		if( MemoryPressure < 0.5f )
+		{
+			PressureColor = PressureColors[0];
+		}
+		else if( MemoryPressure < 0.75f )
+		{
+			PressureColor = PressureColors[1];
+		}
+		else
+		{
+			PressureColor = PressureColors[2];
+		}
 	}
 	else
 	{
-		PressureColor = PressureColors[2];
+		PressureColor = "\033[90m";
 	}
 
 	Fetch.push_back(fmt::format(
 		"    VRAM: {}{}\033[0m / {}", PressureColor,
-		Format::FormatByteCount(MemUsed), Format::FormatByteCount(MemTotal)
+		Format::FormatByteCount(MemUsed.value()),
+		Format::FormatByteCount(MemTotal)
 	));
 
 	Fetch.push_back(fmt::format(
