@@ -19,7 +19,15 @@ elseif( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
 	endif()
 endif()
 
+#vulkan
 find_package( Vulkan REQUIRED )
+
+#fmt
+find_package(fmt QUIET)
+if( fmt_FOUND )
+else()
+	add_subdirectory( externals/fmt EXCLUDE_FROM_ALL )
+endif()
 
 add_executable(
 	vkfetch
@@ -37,4 +45,5 @@ target_link_libraries(
 	vkfetch
 	PRIVATE
 	Vulkan::Vulkan
+	fmt::fmt
 )
