@@ -289,9 +289,8 @@ bool HasExtension(
 	return false;
 }
 
-std::optional<std::float_t> GetMemoryPressure(
-	vk::PhysicalDevice PhysicalDevice, std::uint32_t HeapIndex
-)
+std::optional<vk::DeviceSize>
+	GetHeapBudget(vk::PhysicalDevice PhysicalDevice, std::uint32_t HeapIndex)
 {
 	// Requires `VK_EXT_memory_budget`
 	if( !HasExtension(PhysicalDevice, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) )
@@ -307,12 +306,10 @@ std::optional<std::float_t> GetMemoryPressure(
 		= MemoryPropertyChain.get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>(
 		);
 
-	// The heap budget is how much the current process is allowed to allocate
-	// from the heap. We compare it to the total amount of memory available
-	// to determine how much globally free memory there is left
-	const vk::DeviceSize MemUsed = MemoryBudgetProperties.heapBudget[HeapIndex];
+	const vk::DeviceSize HeapBudget
+		= MemoryBudgetProperties.heapBudget[HeapIndex];
 
-	return MemUsed;
+	return HeapBudget;
 }
 
 bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
@@ -359,17 +356,21 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	const std::uint32_t VRAMHeapIndex
 		= Vulkan::Util::FindVRAMHeapIndex(MemoryProperties).value_or(0);
 
-	const vk::DeviceSize MemTotal
+	const vk::DeviceSize HeapSize
 		= PhysicalDevice.getMemoryProperties().memoryHeaps[VRAMHeapIndex].size;
 
 	std::float_t MemoryPressure
 		= std::numeric_limits<std::float_t>::quiet_NaN();
 
-	const auto MemUsed = GetMemoryPressure(PhysicalDevice, VRAMHeapIndex);
-	if( MemUsed.has_value() )
+	const auto HeapBudget = GetHeapBudget(PhysicalDevice, VRAMHeapIndex);
+	if( HeapBudget.has_value() )
 	{
-		MemoryPressure = (MemTotal - MemUsed.value())
-					   / static_cast<std::float_t>(MemTotal);
+
+		// The budget is the amount of memory that the current process is
+		// allowed to allocate. We compare this to the size of the entire heap
+		// to approximate the amount of globally used memory
+		MemoryPressure = (HeapSize - HeapBudget.value())
+					   / static_cast<std::float_t>(HeapSize);
 	}
 
 	static const char* PressureColors[] = {"\033[92m", "\033[93m", "\033[91m"};
@@ -398,8 +399,9 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 	Fetch.push_back(fmt::format(
 		"    VRAM: {}{}\033[0m / {}", PressureColor,
-		MemUsed.has_value() ? Format::FormatByteCount(MemUsed.value()) : "???",
-		Format::FormatByteCount(MemTotal)
+		HeapBudget.has_value() ? Format::FormatByteCount(HeapBudget.value())
+							   : "???",
+		Format::FormatByteCount(HeapSize)
 	));
 
 	Fetch.push_back(fmt::format(
