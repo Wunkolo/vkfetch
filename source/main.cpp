@@ -269,33 +269,33 @@ bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 	return true;
 }
 
-// Requires `VK_EXT_memory_budget`
-std::optional<std::float_t> GetHeapMemoryUsed(
-	vk::PhysicalDevice PhysicalDevice, std::uint32_t HeapIndex
+bool HasExtension(
+	vk::PhysicalDevice PhysicalDevice, std::string_view ExtensionName
 )
 {
 	if( const auto EnumerateResult
-		= PhysicalDevice.enumerateDeviceLayerProperties();
+		= PhysicalDevice.enumerateDeviceExtensionProperties();
 		EnumerateResult.result == vk::Result::eSuccess )
 	{
-		for( const auto& LayerProperties : EnumerateResult.value )
+		for( const auto& ExtensionProperties : EnumerateResult.value )
 		{
-			if( std::strcmp(
-					LayerProperties.layerName,
-					VK_EXT_MEMORY_BUDGET_EXTENSION_NAME
-				)
+			if( ExtensionName.compare(ExtensionProperties.extensionName.data())
 				== 0 )
 			{
-				// VK_EXT_memory_budget found
-				break;
+				return true;
 			}
 		}
-		// VK_EXT_memory_budget not available
-		return {};
 	}
-	else
+	return false;
+}
+
+std::optional<std::float_t> GetMemoryPressure(
+	vk::PhysicalDevice PhysicalDevice, std::uint32_t HeapIndex
+)
+{
+	// Requires `VK_EXT_memory_budget`
+	if( !HasExtension(PhysicalDevice, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) )
 	{
-		// Error enumerating device layer properties
 		return {};
 	}
 
@@ -309,10 +309,10 @@ std::optional<std::float_t> GetHeapMemoryUsed(
 
 	// The heap budget is how much the current process is allowed to allocate
 	// from the heap. We compare it to the total amount of memory available
-	// to determine how much "usable" free memory there is left
+	// to determine how much globally free memory there is left
 	const vk::DeviceSize MemUsed = MemoryBudgetProperties.heapBudget[HeapIndex];
 
-	return MemoryBudgetProperties.heapBudget[HeapIndex];
+	return MemUsed;
 }
 
 bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
@@ -365,7 +365,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	std::float_t MemoryPressure
 		= std::numeric_limits<std::float_t>::quiet_NaN();
 
-	const auto& MemUsed = GetHeapMemoryUsed(PhysicalDevice, VRAMHeapIndex);
+	const auto MemUsed = GetMemoryPressure(PhysicalDevice, VRAMHeapIndex);
 	if( MemUsed.has_value() )
 	{
 		MemoryPressure = (MemTotal - MemUsed.value())
