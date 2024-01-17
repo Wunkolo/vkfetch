@@ -26,7 +26,7 @@ std::optional<std::string>
 			= Index / static_cast<std::float_t>(Width - 3);
 		if( !std::isfinite(Completion) )
 		{
-			Result += "\033[90m?";
+			Result += "\033[90m-";
 		}
 		else if( BarPhase <= Completion )
 		{
