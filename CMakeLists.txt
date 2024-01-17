@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.21.0 )
+cmake_minimum_required( VERSION 3.9.4 )
 project( vkfetch CXX )
 
 ### Standard
@@ -46,4 +46,9 @@ target_link_libraries(
 	PRIVATE
 	Vulkan::Vulkan
 	fmt::fmt
+)
+set_property(
+	TARGET vkfetch
+	PROPERTY
+	INTERPROCEDURAL_OPTIMIZATION TRUE
 )
