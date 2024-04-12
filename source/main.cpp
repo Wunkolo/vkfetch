@@ -499,22 +499,24 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 int main()
 {
-
-	vk::InstanceCreateInfo InstanceInfo = {};
+	static const vk::ApplicationInfo ApplicationInfo = {
+		.pApplicationName   = "vkfetch",
+		.applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+		.pEngineName        = "vkfetch",
+		.engineVersion      = VK_MAKE_VERSION(1, 0, 0),
+		.apiVersion         = VK_API_VERSION_1_2,
+	};
 
 	static const std::array InstanceExtensions = std::to_array<const char*>({
 		VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
 	});
-	InstanceInfo.setPEnabledExtensionNames(InstanceExtensions);
 
-	InstanceInfo.flags |= vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR;
-
-	vk::ApplicationInfo ApplicationInfo = {};
-	ApplicationInfo.apiVersion          = VK_API_VERSION_1_2;
-	ApplicationInfo.applicationVersion  = VK_MAKE_VERSION(1, 0, 0);
-	ApplicationInfo.engineVersion       = VK_MAKE_VERSION(1, 0, 0);
-
-	InstanceInfo.pApplicationInfo = &ApplicationInfo;
+	const vk::InstanceCreateInfo InstanceInfo = {
+		.flags = vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR,
+		.pApplicationInfo        = &ApplicationInfo,
+		.enabledExtensionCount   = InstanceExtensions.size(),
+		.ppEnabledExtensionNames = InstanceExtensions.data(),
+	};
 
 	vk::UniqueInstance Instance = {};
 
