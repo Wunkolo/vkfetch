@@ -450,7 +450,6 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		break;
 	}
 	default:
-	case Vulkan::Util::VendorID::Unknown:
 	{
 		VendorDetails<Vulkan::Util::VendorID::Unknown>(
 			Art, Style, Fetch, PhysicalDevice

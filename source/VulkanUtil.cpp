@@ -44,6 +44,34 @@ const char* VendorName(VendorID Vendor)
 	{
 		return "Unknown";
 	}
+	case VendorID::VIV:
+	{
+		return "VIV";
+	}
+	case VendorID::VSI:
+	{
+		return "VSI";
+	}
+	case VendorID::Kazan:
+	{
+		return "Kazan";
+	}
+	case VendorID::Codeplay:
+	{
+		return "Codeplay";
+	}
+	case VendorID::Mesa:
+	{
+		return "Mesa";
+	}
+	case VendorID::Pocl:
+	{
+		return "Pocl";
+	}
+	case VendorID::MobileEye:
+	{
+		return "MobileEye";
+	}
 	}
 }
 
