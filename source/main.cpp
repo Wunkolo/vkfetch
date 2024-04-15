@@ -106,6 +106,41 @@ bool VendorDetails<Vulkan::Util::VendorID::Apple>(
 }
 
 template<>
+bool VendorDetails<Vulkan::Util::VendorID::Microsoft>(
+	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
+	const vk::PhysicalDevice& PhysicalDevice
+)
+{
+	static std::array ASCII_ART = std::to_array<const char*>({
+		// clang-format off
+		"                         ",
+		" ########### $$$$$$$$$$$ ",
+		" ########### $$$$$$$$$$$ ",
+		" ########### $$$$$$$$$$$ ",
+		" ########### $$$$$$$$$$$ ",
+		" ########### $$$$$$$$$$$ ",
+		" ########### $$$$$$$$$$$ ",
+		"                         ",
+		" %%%%%%%%%%% &&&&&&&&&&& ",
+		" %%%%%%%%%%% &&&&&&&&&&& ",
+		" %%%%%%%%%%% &&&&&&&&&&& ",
+		" %%%%%%%%%%% &&&&&&&&&&& ",
+		" %%%%%%%%%%% &&&&&&&&&&& ",
+		" %%%%%%%%%%% &&&&&&&&&&& ",
+		"                         ",
+		// clang-format on
+	});
+
+	Art = ASCII_ART;
+
+	Style[0] = "\033[31m";
+	Style[1] = "\033[32m";
+	Style[2] = "\033[34m";
+	Style[3] = "\033[33m";
+	return true;
+}
+
+template<>
 bool VendorDetails<Vulkan::Util::VendorID::Google>(
 	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
 	const vk::PhysicalDevice& PhysicalDevice
@@ -139,6 +174,38 @@ bool VendorDetails<Vulkan::Util::VendorID::Google>(
 	Style[1] = "\033[34m";
 	Style[2] = "\033[32m";
 	Style[3] = "\033[33m";
+	return true;
+}
+
+template<>
+bool VendorDetails<Vulkan::Util::VendorID::Qualcomm>(
+	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
+	const vk::PhysicalDevice& PhysicalDevice
+)
+{
+	static std::array ASCII_ART = std::to_array<const char*>({
+		// clang-format off
+		"         ########         ",
+		"      ##############      ",
+		"    ####          ####    ",
+		"  ####              ####  ",
+		" ####                #### ",
+		" ###                  ### ",
+		"####                  ####",
+		"####                  ####",
+		" ###                  ### ",
+		" ####          ###   #### ",
+		"  ####          ### ####  ",
+		"    ####         #####    ",
+		"      ###############     ",
+		"         ########  ###    ",
+		"                    ###   ",
+		// clang-format on
+	});
+
+	Art = ASCII_ART;
+
+	Style[0] = "\033[34m";
 	return true;
 }
 
@@ -438,6 +505,13 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	case Vulkan::Util::VendorID::Google:
 	{
 		VendorDetails<Vulkan::Util::VendorID::Google>(
+			Art, Style, Fetch, PhysicalDevice
+		);
+		break;
+	}
+	case Vulkan::Util::VendorID::Qualcomm:
+	{
+		VendorDetails<Vulkan::Util::VendorID::Qualcomm>(
 			Art, Style, Fetch, PhysicalDevice
 		);
 		break;
