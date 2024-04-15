@@ -269,7 +269,6 @@ bool VendorDetails<Vulkan::Util::VendorID::Nvidia>(
 		"           #####     ########       #########",
 		"               ######          ##############",
 		"                     ########################",
-		"                   NVIDIA",
 		// clang-format on
 	});
 
