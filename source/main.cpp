@@ -502,6 +502,13 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		);
 		break;
 	}
+	case Vulkan::Util::VendorID::Microsoft:
+	{
+		VendorDetails<Vulkan::Util::VendorID::Microsoft>(
+			Art, Style, Fetch, PhysicalDevice
+		);
+		break;
+	}
 	case Vulkan::Util::VendorID::Google:
 	{
 		VendorDetails<Vulkan::Util::VendorID::Google>(
