@@ -7,75 +7,14 @@ const char* VendorName(VendorID Vendor)
 {
 	switch( Vendor )
 	{
-	case VendorID::AMD:
-	{
-		return "AMD";
-	}
-	case VendorID::Apple:
-	{
-		return "Apple";
-	}
-	case VendorID::ImgTec:
-	{
-		return "ImgTec";
-	}
-	case VendorID::Nvidia:
-	{
-		return "Nvidia";
-	}
-	case VendorID::ARM:
-	{
-		return "ARM";
-	}
-	case VendorID::Microsoft:
-	{
-		return "Microsoft";
-	}
-	case VendorID::Google:
-	{
-		return "Google";
-	}
-	case VendorID::Qualcomm:
-	{
-		return "Qualcomm";
-	}
-	case VendorID::Intel:
-	{
-		return "Intel";
-	}
+		// "Unknown" is the first vendor
 	default:
-	case VendorID::Unknown:
-	{
-		return "Unknown";
-	}
-	case VendorID::VIV:
-	{
-		return "VIV";
-	}
-	case VendorID::VSI:
-	{
-		return "VSI";
-	}
-	case VendorID::Kazan:
-	{
-		return "Kazan";
-	}
-	case VendorID::Codeplay:
-	{
-		return "Codeplay";
-	}
-	case VendorID::Mesa:
-	{
-		return "Mesa";
-	}
-	case VendorID::Pocl:
-	{
-		return "Pocl";
-	}
-	case VendorID::MobileEye:
-	{
-		return "MobileEye";
-	}
+#define VENDOR(_, VendorName)                                                  \
+	case VendorID::VendorName:                                                 \
+		return #VendorName;
+
+#include "Vendors.inc"
+#undef VENDOR
 	}
 }
 

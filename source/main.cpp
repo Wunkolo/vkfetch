@@ -481,62 +481,17 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		DeviceProperties.properties.vendorID
 	) )
 	{
-	case Vulkan::Util::VendorID::AMD:
-	{
-		VendorDetails<Vulkan::Util::VendorID::AMD>(
-			Art, Style, Fetch, PhysicalDevice
-		);
-		break;
-	}
-	case Vulkan::Util::VendorID::Apple:
-	{
-		VendorDetails<Vulkan::Util::VendorID::Apple>(
-			Art, Style, Fetch, PhysicalDevice
-		);
-		break;
-	}
-	case Vulkan::Util::VendorID::Nvidia:
-	{
-		VendorDetails<Vulkan::Util::VendorID::Nvidia>(
-			Art, Style, Fetch, PhysicalDevice
-		);
-		break;
-	}
-	case Vulkan::Util::VendorID::Microsoft:
-	{
-		VendorDetails<Vulkan::Util::VendorID::Microsoft>(
-			Art, Style, Fetch, PhysicalDevice
-		);
-		break;
-	}
-	case Vulkan::Util::VendorID::Google:
-	{
-		VendorDetails<Vulkan::Util::VendorID::Google>(
-			Art, Style, Fetch, PhysicalDevice
-		);
-		break;
-	}
-	case Vulkan::Util::VendorID::Qualcomm:
-	{
-		VendorDetails<Vulkan::Util::VendorID::Qualcomm>(
-			Art, Style, Fetch, PhysicalDevice
-		);
-		break;
-	}
-	case Vulkan::Util::VendorID::Intel:
-	{
-		VendorDetails<Vulkan::Util::VendorID::Intel>(
-			Art, Style, Fetch, PhysicalDevice
-		);
-		break;
-	}
+	// "Unknown" is the first vendor
 	default:
-	{
-		VendorDetails<Vulkan::Util::VendorID::Unknown>(
-			Art, Style, Fetch, PhysicalDevice
-		);
+#define VENDOR(_, VendorName)                                                  \
+	case Vulkan::Util::VendorID::VendorName:                                   \
+		VendorDetails<Vulkan::Util::VendorID::VendorName>(                     \
+			Art, Style, Fetch, PhysicalDevice                                  \
+		);                                                                     \
 		break;
-	}
+
+#include "Vendors.inc"
+#undef VENDOR
 	}
 
 	std::size_t ArtWidth = 0;
