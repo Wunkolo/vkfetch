@@ -8,6 +8,7 @@
 ![AMD](images/amd.png)
 ![Nvidia](images/nvidia.png)
 ![Apple](images/apple.png)
+![Dozen](images/dozen.png)
 
 # Building
 
