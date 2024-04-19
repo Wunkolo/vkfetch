@@ -210,6 +210,15 @@ bool VendorDetails<Vulkan::Util::VendorID::Qualcomm>(
 }
 
 template<>
+bool VendorDetails<Vulkan::Util::VendorID::QualcommPartner>(
+	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
+	const vk::PhysicalDevice& PhysicalDevice
+)
+{
+	return VendorDetails<Vulkan::Util::VendorID::Qualcomm>(Art, Style, Fetch, PhysicalDevice);
+}
+
+template<>
 bool VendorDetails<Vulkan::Util::VendorID::Intel>(
 	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
 	const vk::PhysicalDevice& PhysicalDevice
