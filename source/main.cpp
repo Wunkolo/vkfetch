@@ -14,6 +14,8 @@
 
 #include <Format.hpp>
 
+#include "VendorArt.hpp"
+
 #ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
@@ -49,25 +51,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Unknown>(
 	const vk::PhysicalDevice& PhysicalDevice
 )
 {
-	static std::array ASCII_ART = std::to_array<const char*>({
-		// clang-format off
-		"       ################                    ",
-		"   ##########################              ",
-		" #############         ##########          ",
-		"#########                     ######       ",
-		"#######     ####      ####         ####    ",
-		" #####      ####      ####            ###  ",
-		"  ####       ####    ####               ## ",
-		"   ####      ####    ####                 #",
-		"     ###      ####  ####                   ",
-		"       ##     ####  ####                   ",
-		"               ########                    ",
-		"               ########                    ",
-		"                ######                     ",
-		// clang-format on
-	});
-
-	Art = ASCII_ART;
+	Art = VendorArt::Vulkan;
 
 	Style[0] = "\033[2;31m";
 	return true;
@@ -79,27 +63,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Apple>(
 	const vk::PhysicalDevice& PhysicalDevice
 )
 {
-	static std::array ASCII_ART = std::to_array<const char*>({
-		// clang-format off
-		"                 ###        ",
-		"               ####         ",
-		"              ####          ",
-		"     ####### ###  #######   ",
-		"   ######################## ",
-		"  ########################  ",
-		" #######################    ",
-		"#######################     ",
-		"#######################     ",
-		"########################    ",
-		" #########################  ",
-		"  ##########################",
-		"    ######################  ",
-		"     ###################    ",
-		"       ######    #####      ",
-		// clang-format on
-	});
-
-	Art = ASCII_ART;
+	Art = VendorArt::Apple;
 
 	Style[0] = "\033[37m";
 	return true;
@@ -111,27 +75,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Microsoft>(
 	const vk::PhysicalDevice& PhysicalDevice
 )
 {
-	static std::array ASCII_ART = std::to_array<const char*>({
-		// clang-format off
-		"                         ",
-		" ########### $$$$$$$$$$$ ",
-		" ########### $$$$$$$$$$$ ",
-		" ########### $$$$$$$$$$$ ",
-		" ########### $$$$$$$$$$$ ",
-		" ########### $$$$$$$$$$$ ",
-		" ########### $$$$$$$$$$$ ",
-		"                         ",
-		" %%%%%%%%%%% &&&&&&&&&&& ",
-		" %%%%%%%%%%% &&&&&&&&&&& ",
-		" %%%%%%%%%%% &&&&&&&&&&& ",
-		" %%%%%%%%%%% &&&&&&&&&&& ",
-		" %%%%%%%%%%% &&&&&&&&&&& ",
-		" %%%%%%%%%%% &&&&&&&&&&& ",
-		"                         ",
-		// clang-format on
-	});
-
-	Art = ASCII_ART;
+	Art = VendorArt::Microsoft;
 
 	Style[0] = "\033[31m";
 	Style[1] = "\033[32m";
@@ -146,29 +90,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Google>(
 	const vk::PhysicalDevice& PhysicalDevice
 )
 {
-	static std::array ASCII_ART = std::to_array<const char*>({
-		// clang-format off
-		"            #########          ",
-		"        #################      ",
-		"      #####################    ",
-		"    &#########    #######      ",
-		"  &&&&#####          ##        ",
-		" &&&&&&&#                      ",
-		" &&&&&&&                       ",
-		"&&&&&&&          $$$$$$$$$$$$$$",
-		"&&&&&&&          $$$$$$$$$$$$$$",
-		"&&&&&&&          $$$$$$$$$$$$$$",
-		" &&&&&&&                $$$$$$$",
-		" &&&&&&&%              $$$$$$$ ",
-		"  &&&&%%%%%          %$$$$$$$$ ",
-		"    &%%%%%%%%%    %%%%%$$$$$   ",
-		"      %%%%%%%%%%%%%%%%%%$$     ",
-		"        %%%%%%%%%%%%%%%%%      ",
-		"            %%%%%%%%%%         ",
-		// clang-format on
-	});
-
-	Art = ASCII_ART;
+	Art = VendorArt::Google;
 
 	Style[0] = "\033[31m";
 	Style[1] = "\033[34m";
@@ -183,27 +105,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Qualcomm>(
 	const vk::PhysicalDevice& PhysicalDevice
 )
 {
-	static std::array ASCII_ART = std::to_array<const char*>({
-		// clang-format off
-		"         ########         ",
-		"      ##############      ",
-		"    ####          ####    ",
-		"  ####              ####  ",
-		" ####                #### ",
-		" ###                  ### ",
-		"####                  ####",
-		"####                  ####",
-		" ###                  ### ",
-		" ####          ###   #### ",
-		"  ####          ### ####  ",
-		"    ####         #####    ",
-		"      ###############     ",
-		"         ########  ###    ",
-		"                    ###   ",
-		// clang-format on
-	});
-
-	Art = ASCII_ART;
+	Art = VendorArt::Qualcomm;
 
 	Style[0] = "\033[34m";
 	return true;
@@ -215,7 +117,9 @@ bool VendorDetails<Vulkan::Util::VendorID::QualcommPartner>(
 	const vk::PhysicalDevice& PhysicalDevice
 )
 {
-	return VendorDetails<Vulkan::Util::VendorID::Qualcomm>(Art, Style, Fetch, PhysicalDevice);
+	return VendorDetails<Vulkan::Util::VendorID::Qualcomm>(
+		Art, Style, Fetch, PhysicalDevice
+	);
 }
 
 template<>
@@ -224,21 +128,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Intel>(
 	const vk::PhysicalDevice& PhysicalDevice
 )
 {
-	static std::array ASCII_ART = std::to_array<const char*>({
-		// clang-format off
-		"$$$                                  ###",
-		"$$$                                  ###",
-		"      ## ####     ###      ######    ###",
-		"###   #########   #####  ####  ####  ###",
-		"###   ###    ###  ###    ###    ###  ###",
-		"###   ###    ###  ###    ##########  ###",
-		"###   ###    ###  ###    ###         ###",
-		"###   ###    ###  ###     ########   ###",
-		"###   ###    ###   #####    ####     ###",
-		// clang-format on
-	});
-
-	Art = ASCII_ART;
+	Art = VendorArt::Intel;
 
 	Style[0] = "\033[37m";
 	Style[1] = "\033[36m";
@@ -264,24 +154,7 @@ bool VendorDetails<Vulkan::Util::VendorID::Nvidia>(
 	Fetch.push_back(fmt::format("    Warps Per SM:\033[37m {}", SMBuiltinsProperties.shaderWarpsPerSM));
 	// clang-format on
 
-	static std::array ASCII_ART = std::to_array<const char*>({
-		// clang-format off
-		"                     ########################",
-		"               ######      ##################",
-		"            ###      #####      #############",
-		"         ####   #####    #####     ##########",
-		"       ####   ####   #       ####   #########",
-		"     ####   ####     ###     ####    ########",
-		"      ####   ####    #########     ##########",
-		"        ###    ###   #####      ####   ######",
-		"         #####   ####       #####      ######",
-		"           #####     ########       #########",
-		"               ######          ##############",
-		"                     ########################",
-		// clang-format on
-	});
-
-	Art = ASCII_ART;
+	Art = VendorArt::Nvidia;
 
 	Style[0] = "\033[92m";
 	return true;
@@ -326,18 +199,7 @@ bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 	Fetch.push_back(fmt::format("    WavefrontSize:\033[37m {}", ShaderCoreProperties.wavefrontSize));
 	// clang-format on
 
-	static std::array ASCII_ART = std::to_array<const char*>({
-		// clang-format off
-		"    ###     ###      ### #########    $$$$$$$$$",
-		"   #####    #####  ##### ###    ###     $$$$$$$",
-		"  ### ###   ############ ###     ###   $    $$$",
-		" ###   ###  ###  ##  ### ###     ###  $$    $$$",
-		"########### ###      ### ###    ###  $$$$$$$ $$",
-		"###     ### ###      ### #########   $$$$$    $",
-		// clang-format on
-	});
-
-	Art = ASCII_ART;
+	Art = VendorArt::AMD;
 
 	Style[0] = "\033[37m";
 	Style[1] = "\033[2;32m";

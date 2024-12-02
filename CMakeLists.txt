@@ -33,6 +33,7 @@ add_executable(
 	vkfetch
 	source/main.cpp
 	source/Format.cpp
+	source/VendorArt.cpp
 	source/VulkanUtil.cpp
 )
 
