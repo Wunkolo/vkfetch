@@ -3,15 +3,17 @@
 namespace Vulkan::Util
 {
 
-const char* VendorName(VendorID Vendor)
+std::string_view VendorName(VendorID Vendor)
 {
+	using namespace std::literals;
+
 	switch( Vendor )
 	{
 		// "Unknown" is the first vendor
 	default:
 #define VENDOR(_, VendorName)                                                  \
 	case VendorID::VendorName:                                                 \
-		return #VendorName;
+		return #VendorName##sv;
 
 #include "Vendors.inc"
 #undef VENDOR

@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <string_view>
 
 #include "VulkanConfig.hpp"
 
@@ -15,7 +16,7 @@ enum class VendorID : std::uint32_t
 #undef VENDOR
 };
 
-const char* VendorName(VendorID Vendor);
+std::string_view VendorName(VendorID Vendor);
 
 std::optional<std::uint32_t>
 	FindVRAMHeapIndex(const vk::PhysicalDeviceMemoryProperties& MemoryProperties
