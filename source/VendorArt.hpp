@@ -1,9 +1,10 @@
 #include <array>
+#include <string_view>
 
 namespace VendorArt
 {
 
-#define VENDOR_ART_START(x) extern std::array<const char*, (0
+#define VENDOR_ART_START(x) extern std::array<std::string_view, (0
 
 #define VENDOR_ART_LINE(x) +1
 

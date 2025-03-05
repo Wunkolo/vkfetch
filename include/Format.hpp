@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace Format
 {
@@ -46,7 +47,7 @@ std::string FormatByteCount(std::size_t ByteCount);
 std::string FormatVersion(std::uint32_t Version);
 
 std::string ReplaceString(
-	std::string Subject, const std::string& Search, const std::string& Replace
+	std::string Subject, std::string_view Search, std::string_view Replace
 );
 
 } // namespace Format

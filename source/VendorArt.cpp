@@ -2,9 +2,11 @@
 
 namespace VendorArt
 {
-#define VENDOR_ART_START(x) decltype(x) x = std::to_array<const char*>({
+using namespace std::string_view_literals;
 
-#define VENDOR_ART_LINE(x) x,
+#define VENDOR_ART_START(x) decltype(x) x = std::to_array<std::string_view>({
+
+#define VENDOR_ART_LINE(x) x##sv,
 
 #define VENDOR_ART_END(x)                                                      \
 	});

@@ -5,7 +5,7 @@ namespace Vulkan::Util
 
 std::string_view VendorName(VendorID Vendor)
 {
-	using namespace std::literals;
+	using namespace std::string_view_literals;
 
 	switch( Vendor )
 	{
