@@ -10,6 +10,13 @@
 ![Apple](images/apple.png)
 ![Dozen](images/dozen.png)
 
+# Installing
+
+Now available on [AUR](https://aur.archlinux.org/packages/vkfetch-git)!
+```
+yay -S vkfetch-git
+```
+
 # Building
 
 `vkfetch` will require the vulkan SDK headers for your platform to build. Check out [lunarg](https://vulkan.lunarg.com/) to get started or use your linux distro's package manager!
