@@ -40,6 +40,35 @@ using FetchStyle = std::array<std::string_view, 4>;
 
 using namespace std::string_view_literals;
 
+namespace
+{
+bool ExtensionPropertiesHasExtension(
+	std::span<const vk::ExtensionProperties> ExtensionProperties,
+	std::string_view                         ExtensionName
+)
+{
+	const auto NameMatch
+		= [&ExtensionName](const vk::ExtensionProperties& ExtensionProperties)
+		-> bool { return ExtensionProperties.extensionName == ExtensionName; };
+	return std::ranges::any_of(ExtensionProperties, NameMatch);
+}
+
+bool PhysicalDeviceHasExtension(
+	vk::PhysicalDevice PhysicalDevice, std::string_view ExtensionName
+)
+{
+	if( const auto EnumerateResult
+		= PhysicalDevice.enumerateDeviceExtensionProperties();
+		EnumerateResult.result == vk::Result::eSuccess )
+	{
+		return ExtensionPropertiesHasExtension(
+			EnumerateResult.value, ExtensionName
+		);
+	}
+	return false;
+}
+} // namespace
+
 template<Vulkan::Util::VendorID Vendor>
 bool VendorDetails(
 	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
@@ -145,18 +174,23 @@ bool VendorDetails<Vulkan::Util::VendorID::Nvidia>(
 	const vk::PhysicalDevice& PhysicalDevice
 )
 {
-	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
-		vk::PhysicalDeviceProperties2,
-		vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>();
+	if( PhysicalDeviceHasExtension(
+			PhysicalDevice, VK_NV_SHADER_SM_BUILTINS_EXTENSION_NAME
+		) )
+	{
+		const auto DevicePropertyChain = PhysicalDevice.getProperties2<
+			vk::PhysicalDeviceProperties2,
+			vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>();
 
-	const auto SMBuiltinsProperties
-		= DevicePropertyChain
-			  .get<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>();
+		const auto SMBuiltinsProperties
+			= DevicePropertyChain
+				  .get<vk::PhysicalDeviceShaderSMBuiltinsPropertiesNV>();
 
-	// clang-format off
-	Fetch.push_back(fmt::format("    Streaming Multiprocessors:\033[37m {}"sv, SMBuiltinsProperties.shaderSMCount));
-	Fetch.push_back(fmt::format("    Warps Per SM:\033[37m {}"sv, SMBuiltinsProperties.shaderWarpsPerSM));
-	// clang-format on
+		// clang-format off
+		Fetch.push_back(fmt::format("    Streaming Multiprocessors:\033[37m {}"sv, SMBuiltinsProperties.shaderSMCount));
+		Fetch.push_back(fmt::format("    Warps Per SM:\033[37m {}"sv, SMBuiltinsProperties.shaderWarpsPerSM));
+		// clang-format on
+	}
 
 	Art = VendorArt::Nvidia;
 
@@ -170,40 +204,58 @@ bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 	const vk::PhysicalDevice& PhysicalDevice
 )
 {
-	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
-		vk::PhysicalDeviceProperties2,
-		vk::PhysicalDeviceShaderCorePropertiesAMD,
-		vk::PhysicalDeviceShaderCoreProperties2AMD>();
+	std::vector<vk::ExtensionProperties> ExtensionProperties;
+	if( const auto EnumerateResult
+		= PhysicalDevice.enumerateDeviceExtensionProperties();
+		EnumerateResult.result == vk::Result::eSuccess )
+	{
+		ExtensionProperties = EnumerateResult.value;
+	}
 
-	const auto ShaderCoreProperties
-		= DevicePropertyChain.get<vk::PhysicalDeviceShaderCorePropertiesAMD>();
-
-	const auto ShaderCoreProperties2
-		= DevicePropertyChain.get<vk::PhysicalDeviceShaderCoreProperties2AMD>();
-
-	const auto ActiveComputeUnits
-		= ShaderCoreProperties2.activeComputeUnitCount;
-
-	const auto TotalComputeUnits
-		= ShaderCoreProperties.shaderEngineCount
-		* ShaderCoreProperties.shaderArraysPerEngineCount
-		* ShaderCoreProperties.computeUnitsPerShaderArray;
-
-	Fetch.push_back(
-		fmt::format(
-			"    Compute Units:\033[37m {}\033[0m / {}"sv, ActiveComputeUnits,
-			TotalComputeUnits
+	if( ExtensionPropertiesHasExtension(
+			ExtensionProperties, VK_AMD_SHADER_CORE_PROPERTIES_EXTENSION_NAME
 		)
-	);
+		&& ExtensionPropertiesHasExtension(
+			ExtensionProperties, VK_AMD_SHADER_CORE_PROPERTIES_2_EXTENSION_NAME
+		) )
+	{
+		const auto DevicePropertyChain = PhysicalDevice.getProperties2<
+			vk::PhysicalDeviceProperties2,
+			vk::PhysicalDeviceShaderCorePropertiesAMD,
+			vk::PhysicalDeviceShaderCoreProperties2AMD>();
 
-	// clang-format off
-	Fetch.push_back(fmt::format("    ShaderEngines:\033[37m {}"sv, ShaderCoreProperties.shaderEngineCount));
-	Fetch.push_back(fmt::format("    ShaderArraysPerEngineCount:\033[37m {}"sv, ShaderCoreProperties.shaderArraysPerEngineCount));
-	Fetch.push_back(fmt::format("    ComputeUnitsPerShaderArray:\033[37m {}"sv, ShaderCoreProperties.computeUnitsPerShaderArray));
-	Fetch.push_back(fmt::format("    SimdPerComputeUnit:\033[37m {}"sv, ShaderCoreProperties.simdPerComputeUnit));
-	Fetch.push_back(fmt::format("    WavefrontsPerSimd:\033[37m {}"sv, ShaderCoreProperties.wavefrontsPerSimd));
-	Fetch.push_back(fmt::format("    WavefrontSize:\033[37m {}"sv, ShaderCoreProperties.wavefrontSize));
-	// clang-format on
+		const auto ShaderCoreProperties
+			= DevicePropertyChain
+				  .get<vk::PhysicalDeviceShaderCorePropertiesAMD>();
+
+		const auto ShaderCoreProperties2
+			= DevicePropertyChain
+				  .get<vk::PhysicalDeviceShaderCoreProperties2AMD>();
+
+		const auto ActiveComputeUnits
+			= ShaderCoreProperties2.activeComputeUnitCount;
+
+		const auto TotalComputeUnits
+			= ShaderCoreProperties.shaderEngineCount
+			* ShaderCoreProperties.shaderArraysPerEngineCount
+			* ShaderCoreProperties.computeUnitsPerShaderArray;
+
+		Fetch.push_back(
+			fmt::format(
+				"    Compute Units:\033[37m {}\033[0m / {}"sv,
+				ActiveComputeUnits, TotalComputeUnits
+			)
+		);
+
+		// clang-format off
+		Fetch.push_back(fmt::format("    ShaderEngines:\033[37m {}"sv, ShaderCoreProperties.shaderEngineCount));
+		Fetch.push_back(fmt::format("    ShaderArraysPerEngineCount:\033[37m {}"sv, ShaderCoreProperties.shaderArraysPerEngineCount));
+		Fetch.push_back(fmt::format("    ComputeUnitsPerShaderArray:\033[37m {}"sv, ShaderCoreProperties.computeUnitsPerShaderArray));
+		Fetch.push_back(fmt::format("    SimdPerComputeUnit:\033[37m {}"sv, ShaderCoreProperties.simdPerComputeUnit));
+		Fetch.push_back(fmt::format("    WavefrontsPerSimd:\033[37m {}"sv, ShaderCoreProperties.wavefrontsPerSimd));
+		Fetch.push_back(fmt::format("    WavefrontSize:\033[37m {}"sv, ShaderCoreProperties.wavefrontSize));
+		// clang-format on
+	}
 
 	Art = VendorArt::AMD;
 
@@ -218,18 +270,25 @@ bool VendorDetails<Vulkan::Util::VendorID::ARM>(
 	const vk::PhysicalDevice& PhysicalDevice
 )
 {
-	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
-		vk::PhysicalDeviceProperties2,
-		vk::PhysicalDeviceShaderCorePropertiesARM>();
+	if( PhysicalDeviceHasExtension(
+			PhysicalDevice, VK_ARM_SHADER_CORE_PROPERTIES_EXTENSION_NAME
+		) )
+	{
 
-	const auto ShaderCoreProperties
-		= DevicePropertyChain.get<vk::PhysicalDeviceShaderCorePropertiesARM>();
+		const auto DevicePropertyChain = PhysicalDevice.getProperties2<
+			vk::PhysicalDeviceProperties2,
+			vk::PhysicalDeviceShaderCorePropertiesARM>();
 
-	// clang-format off
-	Fetch.push_back(fmt::format("    Fma Rate:\033[37m {}"sv, ShaderCoreProperties.fmaRate));
-	Fetch.push_back(fmt::format("    Pixel Rate:\033[37m {}"sv, ShaderCoreProperties.pixelRate));
-	Fetch.push_back(fmt::format("    Texel Rate:\033[37m {}"sv, ShaderCoreProperties.texelRate));
-	// clang-format on
+		const auto ShaderCoreProperties
+			= DevicePropertyChain
+				  .get<vk::PhysicalDeviceShaderCorePropertiesARM>();
+
+		// clang-format off
+		Fetch.push_back(fmt::format("    Fma Rate:\033[37m {}"sv, ShaderCoreProperties.fmaRate));
+		Fetch.push_back(fmt::format("    Pixel Rate:\033[37m {}"sv, ShaderCoreProperties.pixelRate));
+		Fetch.push_back(fmt::format("    Texel Rate:\033[37m {}"sv, ShaderCoreProperties.texelRate));
+		// clang-format on
+	}
 
 	Art = VendorArt::Vulkan;
 
@@ -239,32 +298,6 @@ bool VendorDetails<Vulkan::Util::VendorID::ARM>(
 
 namespace
 {
-bool ExtensionPropertiesHasExtension(
-	std::span<const vk::ExtensionProperties> ExtensionProperties,
-	std::string_view                         ExtensionName
-)
-{
-	const auto NameMatch
-		= [&ExtensionName](const vk::ExtensionProperties& ExtensionProperties)
-		-> bool { return ExtensionProperties.extensionName == ExtensionName; };
-	return std::ranges::any_of(ExtensionProperties, NameMatch);
-}
-
-bool PhysicalDeviceHasExtension(
-	vk::PhysicalDevice PhysicalDevice, std::string_view ExtensionName
-)
-{
-	if( const auto EnumerateResult
-		= PhysicalDevice.enumerateDeviceExtensionProperties();
-		EnumerateResult.result == vk::Result::eSuccess )
-	{
-		return ExtensionPropertiesHasExtension(
-			EnumerateResult.value, ExtensionName
-		);
-	}
-	return false;
-}
-
 std::optional<vk::DeviceSize>
 	GetHeapBudget(vk::PhysicalDevice PhysicalDevice, std::uint32_t HeapIndex)
 {
