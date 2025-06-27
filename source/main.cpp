@@ -212,6 +212,31 @@ bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 	return true;
 }
 
+template<>
+bool VendorDetails<Vulkan::Util::VendorID::ARM>(
+	FetchArt& Art, FetchStyle& Style, FetchLog& Fetch,
+	const vk::PhysicalDevice& PhysicalDevice
+)
+{
+	const auto DevicePropertyChain = PhysicalDevice.getProperties2<
+		vk::PhysicalDeviceProperties2,
+		vk::PhysicalDeviceShaderCorePropertiesARM>();
+
+	const auto ShaderCoreProperties
+		= DevicePropertyChain.get<vk::PhysicalDeviceShaderCorePropertiesARM>();
+
+	// clang-format off
+	Fetch.push_back(fmt::format("    Fma Rate:\033[37m {}"sv, ShaderCoreProperties.fmaRate));
+	Fetch.push_back(fmt::format("    Pixel Rate:\033[37m {}"sv, ShaderCoreProperties.pixelRate));
+	Fetch.push_back(fmt::format("    Texel Rate:\033[37m {}"sv, ShaderCoreProperties.texelRate));
+	// clang-format on
+
+	Art = VendorArt::Vulkan;
+
+	Style[0] = "\033[2;31m"sv;
+	return true;
+}
+
 bool HasExtension(
 	vk::PhysicalDevice PhysicalDevice, std::string_view ExtensionName
 )
