@@ -237,7 +237,18 @@ bool VendorDetails<Vulkan::Util::VendorID::ARM>(
 	return true;
 }
 
-bool HasExtension(
+bool ExtensionPropertiesHasExtension(
+	std::span<const vk::ExtensionProperties> ExtensionProperties,
+	std::string_view                         ExtensionName
+)
+{
+	const auto NameMatch
+		= [&ExtensionName](const vk::ExtensionProperties& ExtensionProperties)
+		-> bool { return ExtensionProperties.extensionName == ExtensionName; };
+	return std::ranges::any_of(ExtensionProperties, NameMatch);
+}
+
+bool PhysicalDeviceHasExtension(
 	vk::PhysicalDevice PhysicalDevice, std::string_view ExtensionName
 )
 {
@@ -245,14 +256,9 @@ bool HasExtension(
 		= PhysicalDevice.enumerateDeviceExtensionProperties();
 		EnumerateResult.result == vk::Result::eSuccess )
 	{
-		for( const auto& ExtensionProperties : EnumerateResult.value )
-		{
-			if( ExtensionName.compare(ExtensionProperties.extensionName.data())
-				== 0 )
-			{
-				return true;
-			}
-		}
+		return ExtensionPropertiesHasExtension(
+			EnumerateResult.value, ExtensionName
+		);
 	}
 	return false;
 }
@@ -261,7 +267,9 @@ std::optional<vk::DeviceSize>
 	GetHeapBudget(vk::PhysicalDevice PhysicalDevice, std::uint32_t HeapIndex)
 {
 	// Requires `VK_EXT_memory_budget`
-	if( !HasExtension(PhysicalDevice, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) )
+	if( !PhysicalDeviceHasExtension(
+			PhysicalDevice, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME
+		) )
 	{
 		return {};
 	}
