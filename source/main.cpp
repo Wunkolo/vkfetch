@@ -237,6 +237,8 @@ bool VendorDetails<Vulkan::Util::VendorID::ARM>(
 	return true;
 }
 
+namespace
+{
 bool ExtensionPropertiesHasExtension(
 	std::span<const vk::ExtensionProperties> ExtensionProperties,
 	std::string_view                         ExtensionName
@@ -483,6 +485,8 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 
 	return true;
 }
+
+} // namespace
 
 int main()
 {
