@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <limits>
 #include <optional>
+#include <ranges>
 #include <span>
 #include <string_view>
 
@@ -282,10 +283,24 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	));
 
 	Fetch.push_back(fmt::format(
-		"    Driver: \033[37m{}\033[0m : \033[37m{}\033[0m"sv,
-		DeviceDriverProperties.driverName.data(),
-		DeviceDriverProperties.driverInfo.data()
+		"    Driver: \033[37m{}\033[0m"sv,
+		DeviceDriverProperties.driverName.data()
 	));
+	// Sometimes DriverInfo is a multi-line string, break up this string
+	// so each will get its own separate line in the output
+	const std::string_view DriverInfo
+		= DeviceDriverProperties.driverInfo.data();
+
+	for( const auto& Line : DriverInfo | std::views::split("\n"sv) )
+	{
+		if( !Line.empty() )
+		{
+			Fetch.push_back(fmt::format(
+				"           \033[37m{}\033[0m"sv,
+				std::string_view(Line.begin(), Line.end())
+			));
+		}
+	}
 
 	Fetch.push_back(fmt::format(
 		"    API: \033[37m{}"sv,
