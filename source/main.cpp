@@ -189,10 +189,12 @@ bool VendorDetails<Vulkan::Util::VendorID::AMD>(
 		* ShaderCoreProperties.shaderArraysPerEngineCount
 		* ShaderCoreProperties.computeUnitsPerShaderArray;
 
-	Fetch.push_back(fmt::format(
-		"    Compute Units:\033[37m {}\033[0m / {}"sv, ActiveComputeUnits,
-		TotalComputeUnits
-	));
+	Fetch.push_back(
+		fmt::format(
+			"    Compute Units:\033[37m {}\033[0m / {}"sv, ActiveComputeUnits,
+			TotalComputeUnits
+		)
+	);
 
 	// clang-format off
 	Fetch.push_back(fmt::format("    ShaderEngines:\033[37m {}"sv, ShaderCoreProperties.shaderEngineCount));
@@ -244,8 +246,8 @@ std::optional<vk::DeviceSize>
 		vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
 
 	const vk::PhysicalDeviceMemoryBudgetPropertiesEXT& MemoryBudgetProperties
-		= MemoryPropertyChain.get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>(
-		);
+		= MemoryPropertyChain
+			  .get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
 
 	const vk::DeviceSize HeapBudget
 		= MemoryBudgetProperties.heapBudget[HeapIndex];
@@ -267,45 +269,70 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	FetchArt   Art   = {};
 	FetchStyle Style = {};
 
-	Fetch.push_back(fmt::format(
-		"\033[1m{}\033[0m : {}"sv,
-		DeviceProperties.properties.deviceName.data(),
-		vk::to_string(DeviceProperties.properties.deviceType)
-	));
+	Fetch.push_back(
+		fmt::format(
+			"\033[1m{}\033[0m : {}"sv,
+			DeviceProperties.properties.deviceName.data(),
+			vk::to_string(DeviceProperties.properties.deviceType)
+		)
+	);
 
-	Fetch.push_back(fmt::format(
-		"    Device: \033[37m{:04x}\033[0m : \033[37m{:04x}\033[0m ({})"sv,
-		DeviceProperties.properties.deviceID,
-		DeviceProperties.properties.vendorID,
-		Vulkan::Util::VendorName(static_cast<Vulkan::Util::VendorID>(
-			DeviceProperties.properties.vendorID
-		))
-	));
+	Fetch.push_back(
+		fmt::format(
+			"    Device: \033[37m{:04x}\033[0m : \033[37m{:04x}\033[0m ({})"sv,
+			DeviceProperties.properties.deviceID,
+			DeviceProperties.properties.vendorID,
+			Vulkan::Util::VendorName(
+				static_cast<Vulkan::Util::VendorID>(
+					DeviceProperties.properties.vendorID
+				)
+			)
+		)
+	);
 
-	Fetch.push_back(fmt::format(
-		"    Driver: \033[37m{}\033[0m"sv,
-		DeviceDriverProperties.driverName.data()
-	));
 	// Sometimes DriverInfo is a multi-line string, break up this string
 	// so each will get its own separate line in the output
 	const std::string_view DriverInfo
 		= DeviceDriverProperties.driverInfo.data();
 
-	for( const auto& Line : DriverInfo | std::views::split("\n"sv) )
+	if( auto Lines = DriverInfo | std::views::split("\n"sv);
+		std::ranges::distance(Lines) == 1 )
 	{
-		if( !Line.empty() )
+		Fetch.push_back(
+			fmt::format(
+				"    Driver: \033[37m{}\033[0m | \033[37m{}\033[0m"sv,
+				DeviceDriverProperties.driverName.data(), DriverInfo
+			)
+		);
+	}
+	else
+	{
+		Fetch.push_back(
+			fmt::format(
+				"    Driver: \033[37m{}\033[0m"sv,
+				DeviceDriverProperties.driverName.data()
+			)
+		);
+		for( const auto& Line : Lines )
 		{
-			Fetch.push_back(fmt::format(
-				"           \033[37m{}\033[0m"sv,
-				std::string_view(Line.begin(), Line.end())
-			));
+			if( !Line.empty() )
+			{
+				Fetch.push_back(
+					fmt::format(
+						"           \033[37m{}\033[0m"sv,
+						std::string_view(Line.begin(), Line.end())
+					)
+				);
+			}
 		}
 	}
 
-	Fetch.push_back(fmt::format(
-		"    API: \033[37m{}"sv,
-		Format::FormatVersion(DeviceProperties.properties.apiVersion)
-	));
+	Fetch.push_back(
+		fmt::format(
+			"    API: \033[37m{}"sv,
+			Format::FormatVersion(DeviceProperties.properties.apiVersion)
+		)
+	);
 
 	/// Get the device-local heap that most-indicates the available VRAM
 	const auto&         MemoryProperties = PhysicalDevice.getMemoryProperties();
@@ -357,18 +384,22 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		PressureColor = "\033[90m"sv;
 	}
 
-	Fetch.push_back(fmt::format(
-		"    VRAM: {}{}\033[0m / {}"sv, PressureColor,
-		HeapBudget.has_value() ? Format::FormatByteCount(HeapBudget.value())
-							   : "???"sv,
-		Format::FormatByteCount(HeapSize)
-	));
+	Fetch.push_back(
+		fmt::format(
+			"    VRAM: {}{}\033[0m / {}"sv, PressureColor,
+			HeapBudget.has_value() ? Format::FormatByteCount(HeapBudget.value())
+								   : "???"sv,
+			Format::FormatByteCount(HeapSize)
+		)
+	);
 
-	Fetch.push_back(fmt::format(
-		"    {} % {}{:3.2f}\033[0m"sv,
-		Format::FormatMeter(30, MemoryPressure).value(), PressureColor,
-		MemoryPressure * 100.0f
-	));
+	Fetch.push_back(
+		fmt::format(
+			"    {} % {}{:3.2f}\033[0m"sv,
+			Format::FormatMeter(30, MemoryPressure).value(), PressureColor,
+			MemoryPressure * 100.0f
+		)
+	);
 
 	switch( static_cast<Vulkan::Util::VendorID>(
 		DeviceProperties.properties.vendorID
