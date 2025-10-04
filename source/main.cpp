@@ -290,40 +290,35 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		)
 	);
 
-	// Sometimes DriverInfo is a multi-line string, break up this string
-	// so each will get its own separate line in the output
+	// Sometimes DriverInfo is a multi-line string, print the first line
+	// normally and then print the rest on separate lines
 	const std::string_view DriverInfo
 		= DeviceDriverProperties.driverInfo.data();
-
-	if( auto Lines = DriverInfo | std::views::split("\n"sv);
-		std::ranges::distance(Lines) == 1 )
+	auto DriverInfoLines
+		= std::string_view(DriverInfo) | std::views::split('\n');
+	if( !std::ranges::empty(DriverInfoLines) )
 	{
 		Fetch.push_back(
 			fmt::format(
 				"    Driver: \033[37m{}\033[0m | \033[37m{}\033[0m"sv,
-				DeviceDriverProperties.driverName.data(), DriverInfo
+				DeviceDriverProperties.driverName.data(),
+				std::string_view(
+					DriverInfoLines.front().begin(),
+					DriverInfoLines.front().end()
+				)
 			)
 		);
 	}
-	else
+	for( const auto& Line : DriverInfoLines | std::views::drop(1) )
 	{
-		Fetch.push_back(
-			fmt::format(
-				"    Driver: \033[37m{}\033[0m"sv,
-				DeviceDriverProperties.driverName.data()
-			)
-		);
-		for( const auto& Line : Lines )
+		if( !Line.empty() )
 		{
-			if( !Line.empty() )
-			{
-				Fetch.push_back(
-					fmt::format(
-						"           \033[37m{}\033[0m"sv,
-						std::string_view(Line.begin(), Line.end())
-					)
-				);
-			}
+			Fetch.push_back(
+				fmt::format(
+					"           \033[37m{}\033[0m"sv,
+					std::string_view(Line.begin(), Line.end())
+				)
+			);
 		}
 	}
 
