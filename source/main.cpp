@@ -419,11 +419,11 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 					   / static_cast<std::float_t>(HeapSize);
 	}
 
-	static std::string_view PressureColors[] = {
+	static std::array<std::string_view, 3> PressureColors{{
 		"\033[92m"sv,
 		"\033[93m"sv,
 		"\033[91m"sv,
-	};
+	}};
 
 	std::string_view PressureColor;
 	if( std::isfinite(MemoryPressure) )
