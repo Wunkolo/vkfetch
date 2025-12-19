@@ -20,9 +20,9 @@ std::string_view VendorName(VendorID Vendor)
 	}
 }
 
-std::optional<std::uint32_t>
-	FindVRAMHeapIndex(const vk::PhysicalDeviceMemoryProperties& MemoryProperties
-	)
+std::optional<std::uint32_t> FindVRAMHeapIndex(
+	const vk::PhysicalDeviceMemoryProperties& MemoryProperties
+)
 {
 	for( std::uint32_t Index = 0; Index < MemoryProperties.memoryHeapCount;
 		 ++Index )
