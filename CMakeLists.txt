@@ -11,6 +11,10 @@ set( CMAKE_COLOR_MAKEFILE ON )
 # Generate 'compile_commands.json' for clang_complete
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
+# Check for LTO
+include(CheckIPOSupported)
+check_ipo_supported(RESULT LTO_SUPPORTED OUTPUT LTO_ERROR)
+
 if( MSVC )
 elseif( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
 	# Force colored diagnostic messages in Ninja's output
@@ -48,8 +52,10 @@ target_link_libraries(
 	Vulkan::Vulkan
 	fmt::fmt
 )
-set_property(
-	TARGET vkfetch
-	PROPERTY
-	INTERPROCEDURAL_OPTIMIZATION TRUE
-)
+
+if( LTO_SUPPORTED )
+    message(STATUS "IPO / LTO enabled")
+    set_property(TARGET vkfetch PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+else()
+    message(STATUS "IPO / LTO not supported: <${LTO_ERROR}>")
+endif()
