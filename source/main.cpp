@@ -428,7 +428,6 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	std::string_view PressureColor;
 	if( std::isfinite(MemoryPressure) )
 	{
-
 		if( MemoryPressure < 0.5f )
 		{
 			PressureColor = PressureColors[0];
@@ -459,8 +458,9 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	Fetch.push_back(
 		fmt::format(
 			"    {} % {}{:3.2f}\033[0m"sv,
-			Format::FormatMeter(30, MemoryPressure).value(), PressureColor,
-			MemoryPressure * 100.0f
+			Format::FormatMeter(30, MemoryPressure)
+				.value_or(std::string("[]"sv)),
+			PressureColor, MemoryPressure * 100.0f
 		)
 	);
 
