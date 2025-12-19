@@ -533,9 +533,9 @@ int main()
 {
 	static const vk::ApplicationInfo ApplicationInfo = {
 		.pApplicationName   = "vkfetch",
-		.applicationVersion = vk::makeVersion(1, 0, 0),
+		.applicationVersion = vk::makeApiVersion(0, 1, 0, 0),
 		.pEngineName        = "vkfetch",
-		.engineVersion      = vk::makeVersion(1, 0, 0),
+		.engineVersion      = vk::makeApiVersion(0, 1, 0, 0),
 		.apiVersion         = vk::ApiVersion12,
 	};
 
