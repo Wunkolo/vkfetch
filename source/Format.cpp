@@ -12,9 +12,9 @@ using namespace Literals;
 using namespace std::string_view_literals;
 
 std::optional<std::string>
-	FormatMeter(const std::size_t Width, const std::float_t Completion)
+	FormatMeter(const std::size_t Width, const std::float64_t Completion)
 {
-	if( !Width || Width < 3 || Completion < 0.0f )
+	if( (Width == 0u) || Width < 3u || Completion < 0.0f64 )
 	{
 		return std::nullopt;
 	}
@@ -24,19 +24,19 @@ std::optional<std::string>
 
 	for( std::size_t Index = 0; Index < Width - 2; ++Index )
 	{
-		const std::float_t BarPhase
-			= Index / static_cast<std::float_t>(Width - 3);
+		const std::float64_t BarPhase = static_cast<std::float64_t>(Index)
+									  / static_cast<std::float64_t>(Width - 3);
 		if( !std::isfinite(Completion) )
 		{
 			Result += "\033[90m-"sv;
 		}
 		else if( BarPhase <= Completion )
 		{
-			if( BarPhase < 0.5f )
+			if( BarPhase < 0.5f64 )
 			{
 				Result += "\033[92m"sv;
 			}
-			else if( BarPhase < 0.75f )
+			else if( BarPhase < 0.75f64 )
 			{
 				Result += "\033[93m"sv;
 			}
@@ -70,8 +70,8 @@ std::string FormatByteCount(std::size_t ByteCount)
 		"YiB"sv,
 	}};
 
-	std::size_t Index;
-	double      ByteSize = ByteCount;
+	std::size_t    Index;
+	std::float64_t ByteSize = static_cast<std::float64_t>(ByteCount);
 	for( Index = 0; Index < SizeUnits.size(); Index++ )
 	{
 		if( ByteSize < 1_KiB )
