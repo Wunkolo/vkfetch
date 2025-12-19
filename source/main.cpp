@@ -493,21 +493,29 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		std::string ArtLine(CurLine < Art.size() ? Art[CurLine] : "");
 		// Convert '#" to reverse-video blocks
 		if( !Style[0].empty() )
+		{
 			ArtLine = Format::ReplaceString(
 				ArtLine, "#"sv, fmt::format("{}\033[7m \033[0m"sv, Style[0])
 			);
+		}
 		if( !Style[1].empty() )
+		{
 			ArtLine = Format::ReplaceString(
 				ArtLine, "$"sv, fmt::format("{}\033[7m \033[0m"sv, Style[1])
 			);
+		}
 		if( !Style[2].empty() )
+		{
 			ArtLine = Format::ReplaceString(
 				ArtLine, "%"sv, fmt::format("{}\033[7m \033[0m"sv, Style[2])
 			);
+		}
 		if( !Style[3].empty() )
+		{
 			ArtLine = Format::ReplaceString(
 				ArtLine, "&"sv, fmt::format("{}\033[7m \033[0m"sv, Style[3])
 			);
+		}
 
 		fmt::println(
 			" {:<{}}\033[0m {}"sv, ArtLine, ArtWidth,
