@@ -11,7 +11,7 @@ namespace Vulkan::Util
 {
 enum class VendorID : std::uint32_t
 {
-#define VENDOR(VendorID, VendorName) VendorName = VendorID,
+#define VENDOR(VendorID, VendorName) VendorName = (VendorID),
 #include "Vendors.inc"
 #undef VENDOR
 };
