@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <cstdio>
 #include <optional>
-#include <stdfloat>
 #include <string>
 #include <string_view>
 
@@ -41,7 +40,7 @@ constexpr std::size_t operator""_PiB(unsigned long long int Size)
 } // namespace Literals
 
 std::optional<std::string>
-	FormatMeter(const std::size_t Width, const std::float64_t Completion);
+	FormatMeter(const std::size_t Width, const std::double_t Completion);
 
 std::string FormatByteCount(std::size_t ByteCount);
 

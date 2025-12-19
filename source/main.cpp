@@ -314,8 +314,8 @@ std::optional<vk::DeviceSize>
 		vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
 
 	const vk::PhysicalDeviceMemoryBudgetPropertiesEXT& MemoryBudgetProperties
-		= MemoryPropertyChain
-			  .get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
+		= MemoryPropertyChain.get<vk::PhysicalDeviceMemoryBudgetPropertiesEXT>(
+		);
 
 	const vk::DeviceSize HeapBudget
 		= MemoryBudgetProperties.heapBudget[HeapIndex];
@@ -405,8 +405,8 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	const vk::DeviceSize HeapSize
 		= PhysicalDevice.getMemoryProperties().memoryHeaps[VRAMHeapIndex].size;
 
-	std::float64_t MemoryPressure
-		= std::numeric_limits<std::float64_t>::quiet_NaN();
+	std::double_t MemoryPressure
+		= std::numeric_limits<std::double_t>::quiet_NaN();
 
 	const auto HeapBudget = GetHeapBudget(PhysicalDevice, VRAMHeapIndex);
 	if( HeapBudget.has_value() )
@@ -416,7 +416,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 		// allowed to allocate. We compare this to the size of the entire heap
 		// to approximate the amount of globally used memory
 		MemoryPressure = (HeapSize - HeapBudget.value())
-					   / static_cast<std::float64_t>(HeapSize);
+					   / static_cast<std::double_t>(HeapSize);
 	}
 
 	static std::array<std::string_view, 3> PressureColors{{
@@ -428,11 +428,11 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 	std::string_view PressureColor;
 	if( std::isfinite(MemoryPressure) )
 	{
-		if( MemoryPressure < 0.5f64 )
+		if( MemoryPressure < 0.5f )
 		{
 			PressureColor = PressureColors[0];
 		}
-		else if( MemoryPressure < 0.75f64 )
+		else if( MemoryPressure < 0.75f )
 		{
 			PressureColor = PressureColors[1];
 		}
@@ -460,7 +460,7 @@ bool FetchDevice(const vk::PhysicalDevice& PhysicalDevice)
 			"    {} % {}{:3.2f}\033[0m"sv,
 			Format::FormatMeter(30, MemoryPressure)
 				.value_or(std::string("[]"sv)),
-			PressureColor, MemoryPressure * 100.0f64
+			PressureColor, MemoryPressure * 100.0f
 		)
 	);
 
