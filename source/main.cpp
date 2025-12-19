@@ -525,10 +525,10 @@ int main()
 {
 	static const vk::ApplicationInfo ApplicationInfo = {
 		.pApplicationName   = "vkfetch",
-		.applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+		.applicationVersion = vk::makeVersion(1, 0, 0),
 		.pEngineName        = "vkfetch",
-		.engineVersion      = VK_MAKE_VERSION(1, 0, 0),
-		.apiVersion         = VK_API_VERSION_1_2,
+		.engineVersion      = vk::makeVersion(1, 0, 0),
+		.apiVersion         = vk::ApiVersion12,
 	};
 
 	static const std::array InstanceExtensions = std::to_array<const char*>({
